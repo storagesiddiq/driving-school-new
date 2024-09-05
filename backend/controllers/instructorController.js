@@ -240,9 +240,6 @@ exports.deleteSession = catchAsyncError(async (req, res, next) => {
 
   await Attendance.deleteMany({
         session:session._id,
-        learner:session.learner ,
-        instructor: session.instructor,
-        course: session.course
     })
 
 
@@ -365,17 +362,11 @@ exports.createReport = catchAsyncError(async (req, res, next) => {
 
     // If no report exists, calculate attendance and create a new report
     const totalSessions = await Attendance.countDocuments({
-        learner: session.learner,
-        course: session.course,
         session: session._id,
-        instructor: instructorId,
     });
 
     const completedSessions = await Attendance.countDocuments({
-        learner: session.learner,
-        course: session.course,
-        session: session._id,
-        instructor: instructorId,
+  session: session._id,
         status: 'Present',
     });
 

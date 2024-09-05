@@ -1,18 +1,19 @@
-const catchAsyncError = require('../middlewares/catchAsyncError') 
-const {registerLearner, Course, Session} = require('../models/courseModel'); 
+const catchAsyncError = require('../middlewares/catchAsyncError')
+const { registerLearner, Course, Session } = require('../models/courseModel');
 const errorHandler = require('../utils/errorHandler');
- const Review = require('../models/reviewModel')
+const Review = require('../models/reviewModel')
+const Attendance = require('../models/attendanceModel')
 
 // Create a new learner registration
 exports.createRegistration = catchAsyncError(async (req, res, next) => {
-    const {course} = req.params;
+    const { course } = req.params;
 
     const isAlreadyApplied = await registerLearner.findOne({
-        learner:req.user.id,
+        learner: req.user.id,
         course
     })
 
-    if(isAlreadyApplied){
+    if (isAlreadyApplied) {
         return next(new errorHandler('You are already applied this course!', 400));
 
     }
@@ -21,9 +22,9 @@ exports.createRegistration = catchAsyncError(async (req, res, next) => {
 
     // Create a new registration
     const newRegistration = await registerLearner.create({
-        drivingSchool : drivingSchool.drivingSchool,
+        drivingSchool: drivingSchool.drivingSchool,
         course,
-        learner : req.user.id,
+        learner: req.user.id,
     });
 
     res.status(201).json({
@@ -86,3 +87,111 @@ exports.giveReview = catchAsyncError(async (req, res, next) => {
     });
 });
 
+// Get My Courses
+exports.getMyCourses = catchAsyncError(async (req, res, next) => {
+    // Find courses by learner ID and their statuses, populate course and drivingSchool fields
+    const pendingCourse = await registerLearner.find({ learner: req.user.id, status: 'Pending' })
+        .populate({
+            path: 'course',
+            select: 'title description duration',
+        })
+        .populate({
+            path: 'drivingSchool',
+            select: 'drivingSchoolName location avatar',
+        });
+
+    const rejectedCourse = await registerLearner.find({ learner: req.user.id, status: 'Rejected' })
+        .populate({
+            path: 'course',
+            select: 'title description duration',
+        })
+        .populate({
+            path: 'drivingSchool',
+            select: 'drivingSchoolName location avatar',
+        });
+
+    const approvedCourse = await registerLearner.find({ learner: req.user.id, status: 'Approved' })
+        .populate({
+            path: 'course',
+            select: 'title description duration',
+        })
+        .populate({
+            path: 'drivingSchool',
+            select: 'drivingSchoolName location avatar',
+        });
+
+    // Check if all arrays are empty
+    if (!pendingCourse.length && !rejectedCourse.length && !approvedCourse.length) {
+        return res.status(200).json({
+            success: true,
+            message: "No courses found",
+            courses: []
+        });
+    }
+
+    // Send response with the populated courses
+    res.status(200).json({
+        success: true,
+        pendingCourse,
+        rejectedCourse,
+        approvedCourse
+    });
+});
+
+//Get My session
+exports.getLearnerSessions = catchAsyncError(async (req, res, next) => {
+    const sessions = await Session.find({ learner: req.user.id })
+        .populate({
+            path: 'course',
+            select: 'title description duration',
+        })
+        .populate({
+            path: 'instructor',
+            select: 'name email avatar',
+        });
+
+    if (!sessions.length) {
+        return res.status(200).json({
+            success: true,
+            message: "No sessions found for this learner",
+            sessions: [],
+        });
+    }
+    res.status(200).json({
+        success: true,
+        sessions,
+    });
+});
+
+exports.getLearnerAttendance = catchAsyncError(async (req, res, next) => {
+    const getAtt = await Attendance.find({ session: req.params.sessionId })
+
+    if (!getAtt) {
+        return next(new errorHandler('Course Not Found', 404));
+    }
+
+    const formattedAttendances = getAtt.map(attendance => {
+        const Date = attendance.date.toLocaleDateString('en-US', {
+            day: 'numeric',   // Day of the month (e.g., 1)
+        });
+
+        const Day = attendance.date.toLocaleDateString('en-US', {
+            weekday: 'long',  // Day of the week (e.g., Monday)
+        });
+
+        const Month = attendance.date.toLocaleDateString('en-US', {
+            month: 'long',    // Month name (e.g., January)
+        });
+
+        const formattedDate = { Date, Day, Month }
+
+        return {
+            ...attendance._doc, 
+            formattedDate,      
+        };
+    });
+    res.status(200).json({
+        success: true,
+        attendances:formattedAttendances,
+    });
+})

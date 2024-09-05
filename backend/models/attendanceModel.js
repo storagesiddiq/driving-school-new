@@ -6,35 +6,6 @@ const attendanceSchema = new mongoose.Schema({
         ref: 'Session',
         required: true,
     },
-    learner:  {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-        required: true,
-        validate: {
-            validator: async function(value) {
-                const user = await mongoose.model('User').findById(value);
-                return user && user.role === 'learner';
-            },
-            message: 'Assigned user is not an learner',
-        },
-    },
-    instructor:  {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-        required: true,
-        validate: {
-            validator: async function(value) {
-                const user = await mongoose.model('User').findById(value);
-                return user && user.role === 'instructor';
-            },
-            message: 'Assigned user is not an instructor',
-        },
-    },
-    course: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Course',
-        required: true,
-    },
     date: {
         type: Date,
         required: true,

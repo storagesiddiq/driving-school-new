@@ -25,9 +25,6 @@ async function scheduleSession(sessionId) {
     // Remove existing attendance records for the given session, learner, instructor, and course
     await Attendance.deleteMany({
         session: session._id,
-        learner: learner._id,
-        instructor: instructor._id,
-        course: course._id
     });
 
     // Automatically create or update attendance records for each session date
@@ -35,9 +32,6 @@ async function scheduleSession(sessionId) {
     while (currentDate <= endDate) {
         const attendanceRecord = new Attendance({
             session: session._id,
-            learner: learner._id,
-            instructor: instructor._id,
-            course: course._id,
             date: new Date(currentDate.toISOString().split('T')[0]), // Match date only
             status: 'idle',
         });

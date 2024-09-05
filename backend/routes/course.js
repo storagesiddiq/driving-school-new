@@ -11,6 +11,5 @@ router.delete('/course/:id', isAuthenticatedUser, authorizeRoles('owner'), Cours
 router.put('/course/:id', isAuthenticatedUser, authorizeRoles('owner'), Course.updateCourse)
 
 
-
 module.exports = router
 
