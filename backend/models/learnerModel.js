@@ -23,7 +23,6 @@ const learnerSchema = new mongoose.Schema({
     }],
     location:{
         type:String,
-        require:true
     }
 },{
     timestamps: true,

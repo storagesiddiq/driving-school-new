@@ -14,10 +14,13 @@ router.get('/auth/google', passport.authenticate('google', {
 
 // Google OAuth Callback Route
 router.get('/auth/google/callback',
-    passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+    passport.authenticate('google', { session: false, failureRedirect: '/' }),
     catchAsyncError(async (req, res) => {
         // Generate and send JWT token after successful authentication
-        sendToken(req.user, 200, res);
+        console.log("AUTH SUCCESSFULLY!!");
+        console.log(req.user)
+        console.log(req)
+        sendToken(req.user, 200, res,redirect=true);
     })
 );
 

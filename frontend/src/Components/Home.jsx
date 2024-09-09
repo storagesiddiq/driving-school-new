@@ -3,9 +3,9 @@ import home_img from '../assets/driving_school.jpg';
 import { FiEdit } from "react-icons/fi";
 import { SiGitconnected } from "react-icons/si";
 import { AiOutlineInteraction } from "react-icons/ai";
-import Modal from 'react-bootstrap/Modal';
-import FloatingLabel from 'react-bootstrap/FloatingLabel';
-import Form from 'react-bootstrap/Form';
+
+import RegisterModel from './RegisterModel';
+import { useSelector } from 'react-redux';
 
 const texts = [
   "India's Leading Driving School Platform",
@@ -19,7 +19,6 @@ const Home = () => {
   const [currentText, setCurrentText] = useState(texts[0]);
   const [fade, setFade] = useState(false);
   const [show, setShow] = useState(false);
-
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
@@ -66,7 +65,7 @@ const Home = () => {
         <button onClick={handleShow}
           className="transition-colors duration-500 ease-in-out rounded px-20 py-1 border border-primary bg-primary-dark text-white"
         >
-          LET'S BEGIN
+          REGISTER HERE
         </button>
       </div>
 
@@ -92,49 +91,7 @@ const Home = () => {
     </div>
 
     {/* Register Modal */}
-    <Modal
-        fullscreen="md-down"
-        show={show}
-        onHide={handleClose}
-        aria-labelledby="contained-modal-title-vcenter"
-        centered
-        className="custom-modal"
-      >
-        <Modal.Header closeButton>
-          <h2 className="text-primary-dark text-3xl">SIGNIN</h2>
-        </Modal.Header>
-        <Modal.Body>
-          <form>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> 
-            <FloatingLabel
-              controlId="floatingInput"
-              label="Name"
-              className="mb-3"
-            >
-              <Form.Control className='focus:ring-0 no-focus-border' type="text"  placeholder="name@example.com"  />
-            </FloatingLabel>
-            <FloatingLabel
-              controlId="floatingInput"
-              label="Email address"
-              className="mb-3"
-            >
-              <Form.Control className='focus:ring-0 no-focus-border' type="email" placeholder="name@example.com" />
-            </FloatingLabel>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4"> 
-            <FloatingLabel controlId="floatingPassword" label="Password">
-              <Form.Control className='focus:ring-0 no-focus-border' type="password" placeholder="Password" />
-            </FloatingLabel>
-            <FloatingLabel controlId="floatingPassword" label="Password">
-              <Form.Control className='focus:ring-0 no-focus-border' type="password" placeholder="Password" />
-            </FloatingLabel>
-            </div>
-            <button className='text-white w-full mt-3 px-3 py-2 bg-primary-light rounded-md transition duration-300 ease-in-out hover:bg-primary-dark hover:shadow-lg transform hover:scale-105'>
-              SIGIN
-            </button>
-          </form>
-        </Modal.Body>
-      </Modal>
+    <RegisterModel handleClose={handleClose} show={show}/>
   </>
   );
 };

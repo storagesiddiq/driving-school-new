@@ -1,16 +1,16 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const User = require('../models/UserModel');
-const { hash } = require('./hashing');
+const Learner = require('../models/learnerModel');
 
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: `http://localhost:3001/api/auth/google/callback`,
-    passReqToCallback: true, // Ensure that req is passed as the first argument
+    passReqToCallback: true,
     scope: ['profile', 'email']
 },
-async (req, accessToken, refreshToken, profile, done) => { // Added req as the first argument
+async (req, accessToken, refreshToken, profile, done) => {
     try {
         // Check if the profile object has emails
         if (!profile.emails || !profile.emails.length) {
@@ -20,32 +20,37 @@ async (req, accessToken, refreshToken, profile, done) => { // Added req as the f
         const userEmail = profile.emails[0].value;
 
         // Check if a user with the email already exists
-        const existingUser = await User.findOne({ email: userEmail });
+        let user = await User.findOne({ email: userEmail });
 
-        if (existingUser) {
+        if (user) {
             // Update the user's Google ID if they already exist
-            existingUser.googleId = hash(profile.id.toString());
-            existingUser.name = profile.displayName;
-            existingUser.avatar = profile._json.picture;
-
-            await existingUser.save();
-            return done(null, existingUser); // Ensure done is correctly called
+            user.googleId = profile.id;
+            user.name = profile.displayName;
+            user.avatar = profile._json.picture;
+            await user.save();
+        } else {
+            // If no user exists, create a new one
+            user = new User({
+                googleId: profile.id,
+                name: profile.displayName,
+                email: userEmail,
+                avatar: profile._json.picture,
+                role: 'learner'
+            });
+            await user.save();
         }
 
-        // If no user exists, create a new one
-        const newUser = new User({
-            googleId: hash(profile.id.toString()), // Use the hash function correctly
-            name: profile.displayName,
-            email: userEmail,
-            avatar: profile._json.picture,
-            role:'learner'
-        });
+        // Create a new Learner if the user is not already associated with one
+        let learner = await Learner.findOne({ user: user._id });
+        if (!learner) {
+            learner = new Learner({ user: user._id });
+            await learner.save();
+        }
 
-        await newUser.save();
-        done(null, newUser); // Ensure done is correctly called
+        done(null, user);
     } catch (error) {
         console.error('Error in Google OAuth:', error);
-        done(error); // Ensure done is correctly called with error
+        done(error);
     }
 }));
 

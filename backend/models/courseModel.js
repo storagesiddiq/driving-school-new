@@ -63,8 +63,6 @@ const sessionSchema = new mongoose.Schema({
     },
 });
 
-
-
 const registerlearnerSchema = new mongoose.Schema({
     drivingSchool:{
         type: mongoose.Schema.ObjectId,

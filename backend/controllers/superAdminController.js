@@ -18,6 +18,7 @@ const {
 } = require('../utils/superAdminAnalytics'); 
 const path = require('path')
 const fs = require('fs');
+const instructorModel = require('../models/instructorModel');
 
 // create drivingSchool/admin = api/admin/driving-school
 exports.createDrivingSchool = CatchAsyncError(async (req, res, next) => {
@@ -80,6 +81,7 @@ exports.createDrivingSchool = CatchAsyncError(async (req, res, next) => {
 
 // getAll drivingSchool/admin = api/admin/driving-school
 exports.getAllDrivingSchools = CatchAsyncError(async (req, res, next) => {
+    // Fetch all driving schools and populate the 'owner' field with specific fields
     const drivingSchools = await DrivingSchool.find()
         .populate('owner', 'avatar name email phoneNumber');
 
@@ -87,8 +89,8 @@ exports.getAllDrivingSchools = CatchAsyncError(async (req, res, next) => {
     const drivingSchoolsWithCounts = drivingSchools.map(school => {
         return {
             ...school._doc, 
-            instructorCount: school.instructors.length, 
-            courseCount: school.courses.length 
+            instructorCount: school.instructors ? school.instructors.length : 0, 
+            courseCount: school.courses ? school.courses.length : 0 
         };
     });
 
@@ -103,59 +105,34 @@ exports.getAllDrivingSchools = CatchAsyncError(async (req, res, next) => {
 // get single drivingSchool/admin = api/admin/driving-school/:id
 exports.getDrivingSchoolById = CatchAsyncError(async (req, res, next) => {
     const drivingSchool = await DrivingSchool.findById(req.params.id)
-        .populate('owner', 'avatar name email phoneNumber')
-        .populate('instructors', 'avatar name email phoneNumber')
-        .populate({
-            path: 'courses',
-            populate: [
-                {
-                    path: 'vechicles',
-                    select: 'name availability' // Adjust this according to your Vehicle schema
-                },
-                {
-                    path: 'services',
-                    select: 'serviceName serviceType vehicleType price' // Adjust this according to your Service schema
-                },
-                {
-                    path: 'instructor',
-                    select: 'avatar name email phoneNumber'
-                },
-                {
-                    path: 'reviews',
-                    select: 'rating' // Adjust this according to your Review schema
-                },
-                {
-                    path: 'learners',
-                    populate: {
-                        path: 'learner',
-                        select: 'avatar name email phoneNumber'
-                    }
-                },
-                {
-                    path: 'sessions',
-                    populate: [
-                        {
-                            path: 'learner',
-                            select: 'avatar name email phoneNumber'
-                        },
-                        {
-                            path: 'instructor',
-                            select: 'avatar name email phoneNumber'
-                        }
-                    ]
-                }
-            ]
-        });
+        .populate('owner', 'avatar name email phoneNumber');
 
     if (!drivingSchool) {
         return next(new errorHandler('Driving School not found', 404));
     }
 
+    const courses = await Course.find({ drivingSchool: drivingSchool._id })
+        .populate('vehicles', 'name registrationNumber type lastServiceDate nextServiceDate usedInCourses certificates')
+        .populate('services', 'serviceName serviceType vehicleType price certificatesIssued description')
+        .populate('instructor', 'name email')
+        .populate('learners', 'learnerName learnerEmail')
+        .populate('reviews', 'rating comment reviewerName');
+
+    const instructors = await instructorModel.find({ drivingSchool: drivingSchool._id })
+    .populate('instructor', 'avatar name email');
+
+    const learners = await registerLearner.find({ drivingSchool: drivingSchool._id, status: "Approved" })
+        .populate('learner', 'avatar name email'); // Populate the `learner` field
+
     res.status(200).json({
         success: true,
-        drivingSchool
+        drivingSchool,
+        courses,
+        instructors,
+        learners
     });
 });
+
 
 //delete  drivingSchool/admin = api/admin/driving-school/:id
 exports.deleteDrivingSchool = CatchAsyncError(async (req, res, next) => {

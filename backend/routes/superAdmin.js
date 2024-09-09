@@ -8,7 +8,7 @@ const createMulterInstance = require('../utils/multerConfig');
 
 //Routes for super admin
 router.post('/admin/driving-school', isAuthenticatedUser, authorizeRoles('admin'), SuperAdmin.createDrivingSchool )
-router.get('/admin/driving-school', isAuthenticatedUser, authorizeRoles('admin'), SuperAdmin.getAllDrivingSchools )
+router.get('/admin/driving-schools', isAuthenticatedUser, authorizeRoles('admin'), SuperAdmin.getAllDrivingSchools )
 router.get('/admin/driving-school/:id', isAuthenticatedUser, authorizeRoles('admin'), SuperAdmin.getDrivingSchoolById )
 router.delete('/admin/driving-school/:id', isAuthenticatedUser, authorizeRoles('admin'), SuperAdmin.deleteDrivingSchool )
 router.get('/admin/super-admin-analytics', isAuthenticatedUser, authorizeRoles('admin'), SuperAdmin.superAdminDashboard )
