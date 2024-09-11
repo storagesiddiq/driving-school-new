@@ -1,11 +1,10 @@
 import React from 'react';
-import { FaProductHunt  } from "react-icons/fa6";
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { clearStatus, logoutUser } from '../../slices/authSlice';
-import { MdDashboard } from "react-icons/md";
+import { IoLogOut } from "react-icons/io5";
 import { LuSchool } from "react-icons/lu";
-import { CiImageOn } from "react-icons/ci";
+import { FaRegUserCircle } from "react-icons/fa";
 
 const Sidebar = () => {
     const navigate = useNavigate()
@@ -22,23 +21,28 @@ const Sidebar = () => {
             <nav>
                 <ul className="space-y-2 pt-20">
                     <li>
-                        <Link to="/admin/dashboard" className="flex items-center p-2 hover:bg-gray-700 rounded">
-                             <MdDashboard  className="mr-2"/> Dashboard
+                        <Link to="/owner/dashboard" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                             <LuSchool  className="mr-2"/> My School
                         </Link>
                     </li>
                     <li>
-                        <Link to="/admin/schools" className="flex items-center p-2 hover:bg-gray-700 rounded">
-                            <LuSchool className="mr-2" /> Driving Schools
+                        <Link to="/owner/profile" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                             <FaRegUserCircle  className="mr-2"/> Profile
                         </Link>
                     </li>
                     <li>
-                        <Link to="/admin/default-images" className="flex items-center p-2 hover:bg-gray-700 rounded">
-                            <CiImageOn className="mr-2" /> Default Images
+                        <Link to="/owner/instructors" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                             <FaRegUserCircle  className="mr-2"/> Instructors
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/owner/courses" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                             <FaRegUserCircle  className="mr-2"/> Courses
                         </Link>
                     </li>
                     <li className='bg-red-500'>
                         <button onClick={handleLogout} className="flex w-full items-center  p-2 hover:bg-red-800 rounded">
-                            <FaProductHunt className="mr-2" /> LOGOUT
+                            <IoLogOut className="mr-2" /> LOGOUT
                         </button>
                     </li>
 

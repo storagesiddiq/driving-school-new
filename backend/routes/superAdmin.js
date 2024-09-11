@@ -22,4 +22,7 @@ const uploadBanner = createMulterInstance('defaultBanner');
 router.route('/admin/updateAvatar').put(isAuthenticatedUser,authorizeRoles('admin'), uploadAvatar.single('defaultAvatar'),SuperAdmin.updateDefaultAvatar )
 router.route('/admin/updateBanner').put(isAuthenticatedUser,authorizeRoles('admin'), uploadBanner.single('defaultBanner'),SuperAdmin.updateDefaultBanner )
 
+router.route('/admin/default-banner').get(isAuthenticatedUser,authorizeRoles('admin'), uploadBanner.single('defaultBanner'),SuperAdmin.getDefaultBanner )
+router.route('/admin/default-avatar').get(isAuthenticatedUser,authorizeRoles('admin'), uploadBanner.single('defaultBanner'),SuperAdmin.getDefaultAvatar )
+
 module.exports = router

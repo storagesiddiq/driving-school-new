@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { loginAuthStatus, loginAuthUser, loginIsAuthenticated } from '../slices/authSlice';
 import Spinner from '../utils/Spinner';
 
-const ProtectedRoute = ({ children, isAdmin }) => {
+const ProtectedRoute = ({ children, isAdmin, isOwner }) => {
     const isAuthenticated = useSelector(loginIsAuthenticated);
     const authStatus = useSelector(loginAuthStatus);
     const user = useSelector(loginAuthUser);
@@ -28,6 +28,12 @@ const ProtectedRoute = ({ children, isAdmin }) => {
     if (!isAdmin && user?.role === 'admin') {
         return <Navigate to="/admin/dashboard" />;
     }
+
+    // Handle user access (non-admin)
+    if (!isOwner && user?.role === 'owner') {
+        return <Navigate to="/owner/dashboard" />;
+    }
+
 
     // If all conditions are met, render the children (protected content)
     return children;

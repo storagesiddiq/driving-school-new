@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearCreated, clearError, createSchool, Error, getSchools, IsCreated, Schools, Status } from '../../slices/adminSlice';
+import { clearCreated, clearDeleted, clearError, createSchool, deleteSchool, Error, getSchools, IsCreated, IsDeleted, Schools, Status } from '../../slices/adminSlice';
 import { FaEdit, FaTrashAlt } from 'react-icons/fa';
 import { MdOutlineSearch } from 'react-icons/md';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { Button, Modal, Form, FloatingLabel } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
+import { Button, Modal, Form, FloatingLabel, Toast } from 'react-bootstrap';
 import Spinner from '../../utils/Spinner';
 
 const DrivingSchools = () => {
@@ -15,6 +15,8 @@ const DrivingSchools = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const navigate = useNavigate();
   const isCreated = useSelector(IsCreated)
+  const isDeleted = useSelector(IsDeleted)
+
   const [show, setShow] = useState(false);
   const [formValues, setFormValues] = useState({
     name: '',
@@ -31,7 +33,7 @@ const DrivingSchools = () => {
   };
   useEffect(() => {
     dispatch(getSchools());
-  }, [dispatch, isCreated]);
+  }, [dispatch, isCreated, isDeleted]);
 
   // Filter and sort the schools based on search term and sorting option
   const filteredSchools = schools
@@ -90,31 +92,69 @@ const DrivingSchools = () => {
     e.preventDefault();
     if (validateForm()) {
       dispatch(createSchool(formValues))
-      handleClose()
+  
     }
   };
 
   const [showToast, setShowToast] = useState(false);
 
   useEffect(() => {
+    if(isCreated){
+      handleClose()
+      setFormValues.name('')
+      setFormValues.email('')
+      setFormValues.phoneNumber('')
+      setFormValues.drivingSchoolName('')
+      setFormValues.location('')
+    }
     if (isCreated) {
       setShowToast(true);
       const timer = setTimeout(() => {
-        setShowToast(false); 
+        setShowToast(false);
       }, 3000);
       dispatch(clearCreated())
-      return () => clearTimeout(timer); 
+      return () => clearTimeout(timer);
     }
-  }, [isCreated]);
+    if (isDeleted) {
+      setShowToast(true);
+      const timer = setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+      dispatch(clearDeleted())
+      return () => clearTimeout(timer);
+    }
+  }, [isCreated, isDeleted]);
 
+  const handleDelete = (id) => {
+    const isConfirmed = window.confirm("Are you sure you want to delete this driving school?");
+
+    if (isConfirmed) {
+      dispatch(deleteSchool(id));
+    }
+  };
 
   return (
     <>
-        {showToast && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transition-opacity duration-500 ease-in-out">
-          <p>Created successfully!</p>
-        </div>
-      )}
+      <Toast
+        onClose={() => setShowToast(false)}
+        show={showToast}
+        delay={3000}
+        autohide
+        style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          zIndex: 9999,
+        }}
+      >
+        <Toast.Header>
+          <strong className="mr-auto">Success</strong>
+        </Toast.Header>
+        {isCreated && <Toast.Body className='bg-success'>Created successfully!</Toast.Body>}
+        {isDeleted && <Toast.Body className='bg-success'>Deleted successfully!</Toast.Body>}
+        {error && <Toast.Body className='bg-danger'>{error}</Toast.Body>}
+
+      </Toast>
       <div className="p-8 bg-gray-100 min-h-50">
         <h2 className="text-3xl font-bold text-gray-700 text-center mb-10">Driving Schools</h2>
 
@@ -144,7 +184,7 @@ const DrivingSchools = () => {
 
 
         {/* Error Handling */}
-        {status === 'failed' && (
+        {status === 'failed' && error && (
           <div className="text-red-500 text-center mb-6">Error: {error}</div>
         )}
 
@@ -164,11 +204,11 @@ const DrivingSchools = () => {
         {status === 'succeeded' && (
           <div className="grid grid-cols-1 gap-6">
             {filteredSchools.map((school) => (
-              <div onClick={() => handleClick(school._id)} key={school.id} className="hover:cursor-pointer bg-white p-4 sm:p-6 rounded-lg shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+              <div onClick={() => handleClick(school._id)} key={school.id} className=" hover:cursor-pointer bg-white p-4 sm:p-6 rounded-lg shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
                 {/* Driving School and Owner Details */}
                 <div className="flex flex-col sm:flex-row items-center sm:items-start w-full gap-3">
                   {/* Driving School Details */}
-                  <div className="flex items-center gap-3">
+                  <div className="lg:w-1/2 flex items-center gap-3">
                     <img
                       src={school?.avatar}
                       width="50px"
@@ -188,7 +228,7 @@ const DrivingSchools = () => {
                   <div className="hidden sm:block h-12 w-px bg-gray-400"></div> {/* Visible on larger screens */}
 
                   {/* Owner Details */}
-                  <div className="hidden lg:flex items-center gap-3 mt-2 lg:mt-0 ">
+                  <div className="lg:w-1/2 hidden lg:flex items-center gap-3 mt-2 lg:mt-0 ">
                     <img
                       src={school.owner?.avatar}
                       width="50px"
@@ -206,11 +246,16 @@ const DrivingSchools = () => {
                 </div>
 
                 {/* Edit and Delete Buttons */}
-                <div className="flex space-x-4 mt-4 sm:mt-0">
-                  <button className="text-red-500 hover:text-red-700">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(school._id);
+                    }}
+                    className="p-2 border rounded-md bg-red-300 hover:bg-red-600 text-red-700 hover:text-white"
+                  >
                     <FaTrashAlt />
                   </button>
-                </div>
+
               </div>
             ))}
           </div>
@@ -232,7 +277,7 @@ const DrivingSchools = () => {
                 name="name"
                 value={formValues.name}
                 onChange={handleChange}
-                
+
               />
               {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
             </FloatingLabel>
@@ -244,7 +289,7 @@ const DrivingSchools = () => {
                 name="email"
                 value={formValues.email}
                 onChange={handleChange}
-                
+
               />
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
             </FloatingLabel>
@@ -256,7 +301,7 @@ const DrivingSchools = () => {
                 name="phoneNumber"
                 value={formValues.phoneNumber}
                 onChange={handleChange}
-                
+
               />
               {errors.phoneNumber && <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>}
             </FloatingLabel>
@@ -268,9 +313,9 @@ const DrivingSchools = () => {
                 name="drivingSchoolName"
                 value={formValues.drivingSchoolName}
                 onChange={handleChange}
-                
+
               />
-                            {errors.drivingSchoolName && <p className="text-red-500 text-sm mt-1">{errors.drivingSchoolName}</p>}
+              {errors.drivingSchoolName && <p className="text-red-500 text-sm mt-1">{errors.drivingSchoolName}</p>}
             </FloatingLabel>
 
             <FloatingLabel controlId="location" label="Location" className="mb-3">
@@ -280,14 +325,14 @@ const DrivingSchools = () => {
                 name="location"
                 value={formValues.location}
                 onChange={handleChange}
-                
+
               />
-            {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
+              {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
             </FloatingLabel>
             {errors.apiError && (
               <p className="text-red-500 text-sm mt-1">{errors.apiError}</p>
             )}
-                 <button type='submit' disabled={status === "loading"} className='text-white w-full mt-3 px-3 py-2 bg-primary-dark rounded-md transition duration-300 ease-in-out hover:shadow-lg transform hover:scale-105'>
+            <button type='submit' disabled={status === "loading"} className='text-white w-full mt-3 px-3 py-2 bg-primary-dark rounded-md transition duration-300 ease-in-out hover:shadow-lg transform hover:scale-105'>
               {status === "loading" ? <Spinner /> : "SUBMIT"}
             </button>
           </Form>

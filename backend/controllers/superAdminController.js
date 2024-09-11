@@ -7,22 +7,22 @@ const sendEmail = require('../utils/email')
 const Vehicle = require('../models/vehicleModel');
 const Service = require('../models/serviceModel');
 const Review = require('../models/reviewModel');
-const {registerLearner} = require('../models/courseModel');
-const {Session} = require('../models/courseModel');
-const {Course} = require('../models/courseModel');
+const { registerLearner } = require('../models/courseModel');
+const { Session } = require('../models/courseModel');
+const { Course } = require('../models/courseModel');
 const {
     getActiveLearners,
     getTotalLearners,
     getTotalInstructors,
     getTotalSchools
-} = require('../utils/superAdminAnalytics'); 
+} = require('../utils/superAdminAnalytics');
 const path = require('path')
 const fs = require('fs');
 const instructorModel = require('../models/instructorModel');
 
 // create drivingSchool/admin = api/admin/driving-school
 exports.createDrivingSchool = CatchAsyncError(async (req, res, next) => {
-    const { name, email, phoneNumber, drivingSchoolName } = req.body;
+    const { name, email, phoneNumber, drivingSchoolName, location } = req.body;
 
     // Generate a random password
     const password = generateRandomPassword();
@@ -39,6 +39,7 @@ exports.createDrivingSchool = CatchAsyncError(async (req, res, next) => {
         const drivingSchool = await DrivingSchool.create({
             owner: owner._id,
             drivingSchoolName,
+            location
         });
 
         console.log(password);
@@ -88,16 +89,16 @@ exports.getAllDrivingSchools = CatchAsyncError(async (req, res, next) => {
     // Add instructors and courses count to each driving school
     const drivingSchoolsWithCounts = drivingSchools.map(school => {
         return {
-            ...school._doc, 
-            instructorCount: school.instructors ? school.instructors.length : 0, 
-            courseCount: school.courses ? school.courses.length : 0 
+            ...school._doc,
+            instructorCount: school.instructors ? school.instructors.length : 0,
+            courseCount: school.courses ? school.courses.length : 0
         };
     });
 
     res.status(200).json({
         success: true,
         count: drivingSchools.length,
-        drivingSchools: drivingSchoolsWithCounts 
+        drivingSchools: drivingSchoolsWithCounts
     });
 });
 
@@ -119,7 +120,7 @@ exports.getDrivingSchoolById = CatchAsyncError(async (req, res, next) => {
         .populate('reviews', 'rating comment reviewerName');
 
     const instructors = await instructorModel.find({ drivingSchool: drivingSchool._id })
-    .populate('instructor', 'avatar name email');
+        .populate('instructor', 'avatar name email');
 
     const learners = await registerLearner.find({ drivingSchool: drivingSchool._id, status: "Approved" })
         .populate('learner', 'avatar name email'); // Populate the `learner` field
@@ -137,46 +138,27 @@ exports.getDrivingSchoolById = CatchAsyncError(async (req, res, next) => {
 //delete  drivingSchool/admin = api/admin/driving-school/:id
 exports.deleteDrivingSchool = CatchAsyncError(async (req, res, next) => {
     const drivingSchool = await DrivingSchool.findById(req.params.id)
-        .populate({
-            path: 'courses',
-            populate: [
-                'vechicles',
-                'services',
-                'reviews',
-                {
-                    path: 'learners',
-                    populate: 'learner'
-                },
-                {
-                    path: 'sessions',
-                    populate: ['learner', 'instructor']
-                }
-            ]
-        })
-        .populate('instructors')
-        .populate('owner');
+        .populate('owner'); // Make sure only paths in your schema are populated.
 
     if (!drivingSchool) {
         return next(new errorHandler('Driving School not found', 404));
     }
 
     // Delete associated courses
-    for (const course of drivingSchool.courses) {
-        await Vehicle.deleteMany({ _id: { $in: course.vechicles } });
-        await Service.deleteMany({ _id: { $in: course.services } });
-        await Review.deleteMany({ _id: { $in: course.reviews } });
-        await registerLearner.deleteMany({ _id: { $in: course.learners.map(learner => learner._id) } });
-        await Session.deleteMany({ _id: { $in: course.sessions.map(session => session._id) } });
-        await Course.findByIdAndDelete(course._id);
-    }
+    await Course.deleteMany({ drivingSchool: drivingSchool._id });
+    await Session.deleteMany({ drivingSchool: drivingSchool._id });
+    await registerLearner.deleteMany({ drivingSchool: drivingSchool._id });
 
-    // Delete associated instructors
-    await User.deleteMany({ _id: { $in: drivingSchool.instructors } });
+    // Delete instructors and their associated users
+    const instructors = await instructorModel.find({ drivingSchool: drivingSchool._id });
+    const userIds = instructors.map((instructor) => instructor.user); // Assuming `instructor.user` refers to User ID
+    await instructorModel.deleteMany({ drivingSchool: drivingSchool._id });
+    await User.deleteMany({ _id: { $in: userIds } });
 
     // Delete associated owner
-    await User.findByIdAndDelete(drivingSchool.owner);
+    await User.findByIdAndDelete(drivingSchool.owner); // Ensure you are deleting the owner's user document
 
-    // Delete the driving school user and driving school
+    // Delete the driving school
     await drivingSchool.deleteOne();
 
     res.status(200).json({
@@ -184,6 +166,7 @@ exports.deleteDrivingSchool = CatchAsyncError(async (req, res, next) => {
         message: 'Driving School and associated data deleted successfully'
     });
 });
+
 
 //get Analytics = api/admin/super-admin-analytics
 // Super Admin Dashboard Controller
@@ -212,7 +195,7 @@ exports.superAdminDashboard = CatchAsyncError(async (req, res, next) => {
                 totalSchools
             }
         });
-        
+
     } catch (error) {
         return next(error);
     }
@@ -366,3 +349,69 @@ exports.updateDefaultBanner = CatchAsyncError(async (req, res) => {
         });
     }
 });
+
+//get defaultAvatar from admin - api/defualt-avatar
+exports.getDefaultAvatar = CatchAsyncError(async (req, res) => {
+    const avatarDirectory = path.join(__dirname, '../uploads/defaultAvatar');
+  
+    // Read the directory to find the image file
+    fs.readdir(avatarDirectory, (err, files) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: 'Error reading the directory',
+        });
+      }
+  
+      // Find the first file in the directory (assuming there's only one default avatar image)
+      const avatarFile = files.find(file => file);
+  
+      if (!avatarFile) {
+        return res.status(404).json({
+          success: false,
+          message: 'No default avatar found',
+        });
+      }
+  
+      // Build the full URL of the file
+      const avatarUrl = `${req.protocol}://${req.get('host')}/uploads/defaultAvatar/${avatarFile}`;
+  
+      res.status(200).json({
+        success: true,
+        url: avatarUrl,
+      });
+    });
+  });
+  
+//put defaultBanner from admin = api/defualt-banner
+exports.getDefaultBanner = CatchAsyncError(async (req, res) => {
+    const avatarDirectory = path.join(__dirname, '../uploads/defaultBanner');
+  
+    // Read the directory to find the image file
+    fs.readdir(avatarDirectory, (err, files) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: 'Error reading the directory',
+        });
+      }
+  
+      // Find the first file in the directory (assuming there's only one default avatar image)
+      const avatarFile = files.find(file => file);
+  
+      if (!avatarFile) {
+        return res.status(404).json({
+          success: false,
+          message: 'No default avatar found',
+        });
+      }
+  
+      // Build the full URL of the file
+      const avatarUrl = `${req.protocol}://${req.get('host')}/uploads/defaultBanner/${avatarFile}`;
+  
+      res.status(200).json({
+        success: true,
+        url: avatarUrl,
+      });
+    });
+  });

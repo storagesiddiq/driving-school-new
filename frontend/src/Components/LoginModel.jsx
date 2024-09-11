@@ -44,8 +44,7 @@ const LoginModel = ({ show, handleClose }) => {
   }, [error, forgotPasswordMessage]);
 
   useEffect(() => {
-    if (isAuthenticated && (user && user.role !== "admin")) {
-      navigate('/');
+    if (isAuthenticated) {
       handleClose()
       setEmail('')
       setPassword('')

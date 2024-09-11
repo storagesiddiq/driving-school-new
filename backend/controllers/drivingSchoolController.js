@@ -11,7 +11,6 @@ const Instructor = require('../models/instructorModel')
 const { registerLearner } = require('../models/courseModel')
 const { Course } = require('../models/courseModel')
 const LearnerModel = require('../models/learnerModel');
-const { log } = require('console');
 
 // Get Driving School - /api/my-driving-school
 exports.getMySchool = CatchAsyncError(async (req, res, next) => {
@@ -23,55 +22,14 @@ exports.getMySchool = CatchAsyncError(async (req, res, next) => {
         await drivingSchool.populate('instructors', 'avatar name email phoneNumber')
     }
 
-    if (drivingSchool.courses && drivingSchool.courses.length > 0) {
-        await drivingSchool.populate({
-            path: 'courses',
-            populate: [
-                {
-                    path: 'vechicles',
-                    select: 'name availability' // Adjust this according to your Vehicle schema
-                },
-                {
-                    path: 'services',
-                    select: 'serviceName serviceType vehicleType price' // Adjust this according to your Service schema
-                },
-                {
-                    path: 'instructor',
-                    select: 'avatar name email phoneNumber'
-                },
-                {
-                    path: 'reviews',
-                    select: 'rating' // Adjust this according to your Review schema
-                },
-                {
-                    path: 'learners',
-                    populate: {
-                        path: 'learner',
-                        select: 'avatar name email phoneNumber'
-                    }
-                },
-                {
-                    path: 'sessions',
-                    populate: [
-                        {
-                            path: 'learner',
-                            select: 'avatar name email phoneNumber'
-                        },
-                        {
-                            path: 'instructor',
-                            select: 'avatar name email phoneNumber'
-                        }
-                    ]
-                }
-            ]
-        })
-    }
+    const course = await Course.find({drivingSchool:drivingSchool._id})
+    const Instructors = await Instructor.find({drivingSchool:drivingSchool._id})
 
     if (!drivingSchool) {
         return next(new errorHandler('You\'re not the owner of any Driving School', 404))
     }
 
-    res.status(200).json({ success: true, drivingSchool });
+    res.status(200).json({ success: true, drivingSchool, course, Instructors });
 });
 
 // Update Driving School - /api/update-driving-school
@@ -340,14 +298,7 @@ exports.getInstructorById = CatchAsyncError(async (req, res, next) => {
     }
 
     const instructor = await Instructor.findOne({ _id: req.params.id, drivingSchool: drivingSchool._id })
-        .populate({
-            path: 'drivingSchool',
-            select: 'drivingSchoolName avatar location bannerImg about owner courses',
-            populate: [
-                { path: 'owner', select: 'avatar name email phoneNumber' }, // Populate owner details
-            ]
-        })
-        .populate('instructor', 'avatar name email phoneNumber')
+        .populate('instructor', 'avatar name email ')
         .populate('courses');
 
     if (!instructor) {
