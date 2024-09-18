@@ -17,7 +17,7 @@ exports.getMyProfile = catchAsyncError(async (req, res, next) => {
             select: 'drivingSchoolName avatar location bannerImg about owner courses',
             populate: { path: 'owner', select: 'avatar name email phoneNumber' }
         })
-        .populate('instructor', 'avatar name email phoneNumber')
+        .populate('instructor', 'avatar name email phoneNumber createdAt')
         .populate({
             path: 'courses',
             select: 'title description duration ratings',
@@ -46,29 +46,40 @@ exports.getAllRegUsersMyCourse = catchAsyncError(async (req, res, next) => {
     const courses = await Course.find({
         instructor: req.user.id,
     })
-        .populate({
-            path: 'learners', // Populating the learners array in the course
-            populate: [
-                {
-                    path: 'learner', // Populating the learner field in each registered learner
-                    select: 'name email phoneNumber avatar',
-                },
-                {
-                    path: 'course', // Populating the course field in each registered learner
-                    select: 'title description duration',
-                }
-            ]
-        });
+    .populate({
+        path: 'learners', 
+        populate: [
+            {
+                path: 'learner', 
+                select: 'name email phoneNumber avatar',
+            },
+            {
+                path: 'course', 
+                select: 'title description duration',
+            }
+        ]
+    });
 
     // Extract learners from each course
-    const learners = courses.map(course => course.learners).flat();
+    let learners = courses.map(course => course.learners).flat();
+
+    learners = await Promise.all(learners.map(async (learner) => {
+        const session = await Session.findOne({
+            learner: learner.learner._id,  
+            course: learner.course._id     
+        });
+
+        // Append session status (whether session exists or not)
+        learner.sessionStatus = session && session._id;
+        return learner;
+    }));
 
     res.status(200).json({
         success: true,
         learners,
-        courses
     });
 });
+
 
 
 /* ************************* SESSION ********************************** */
@@ -136,23 +147,43 @@ exports.createSession = catchAsyncError(async (req, res, next) => {
 
 // GET all sessions for a specific course
 exports.getAllSessions = catchAsyncError(async (req, res, next) => {
-    const courseId = req.params.courseId;
+    const sessions = await Session.find({ instructor: req.user.id })
+        .populate('course', 'title description duration')
+        .populate('learner', 'avatar name email');
 
-    // Find the course and populate sessions
-    const course = await Course.findById(courseId).populate({
-        path: 'sessions',
-        populate: { path: 'learner instructor', select: 'name email' } // Populate learner and instructor details
-    });
+    // Get today's date and reset time to 00:00:00 for comparison
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set time to 00:00:00
 
-    if (!course) {
-        return next(new errorHandler('Course not found', 404));
-    }
+    // Update session status based on the endDate
+    const updatedSessions = await Promise.all(
+        sessions.map(async (session) => {
+            const sessionEndDate = new Date(session.endDate);
+            sessionEndDate.setHours(0, 0, 0, 0); // Reset time for comparison
+
+            // If endDate is today or in the past, mark the session as 'Completed'
+            if (sessionEndDate <= today && session.status !== 'Completed') {
+                session.status = 'Completed';
+                await session.save(); // Save the session with updated status
+            }
+
+            // If endDate is in the future, mark the session as 'Scheduled'
+            if (sessionEndDate > today && session.status !== 'Scheduled') {
+                session.status = 'Scheduled';
+                await session.save(); // Save the session with updated status
+            }
+
+            return session;
+        })
+    );
 
     res.status(200).json({
         success: true,
-        sessions: course.sessions,
+        sessions: updatedSessions,
     });
 });
+
+
 
 // GET a single session
 exports.getSession = catchAsyncError(async (req, res, next) => {
@@ -173,13 +204,17 @@ exports.getSession = catchAsyncError(async (req, res, next) => {
 // UPDATE a session
 exports.updateSession = catchAsyncError(async (req, res, next) => {
     const sessionId = req.params.sessionId;
-    const { learner, startDate, startTime, endTime, courseId } = req.body;
+    const { startDate, startTime, endTime } = req.body;
 
-    // Find the related course to validate learner
-    const course = await Course.findById(courseId);
+    const session = await Session.findById(sessionId)
 
+    if (!session) {
+        return next(new errorHandler('Session not found', 404));
+    }
+
+    const course = await Course.findById(session.course);
     if (!course) {
-        return next(new errorHandler('Course not found', 404));
+        return next(new errorHandler('Associated course not found', 404));
     }
 
     const formattedStartDate = new Date(startDate);
@@ -197,21 +232,25 @@ exports.updateSession = catchAsyncError(async (req, res, next) => {
     endDate.setHours(0, 0, 0, 0); // Ensure endDate also only includes the date part
 
     // Find and update the session
-    const session = await Session.findByIdAndUpdate(sessionId, {
-        course: req.params.courseId,
-        learner,
-        instructor: req.user.id,
-        startDate: formattedStartDate,
-        endDate,
-        startTime,
-        endTime
-    }, { new: true, useFindAndModify: false });
+    const updatedSession = await Session.findByIdAndUpdate(
+        sessionId,
+        {
+            instructor: req.user.id,
+            startDate: formattedStartDate,
+            endDate: endDate,
+            startTime,
+            endTime
+        },
+        { new: true,  runValidators: true}
+    );
 
-    if (!session) {
-        return next(new errorHandler('Session not found', 404));
+    if (!updatedSession) {
+        return next(new errorHandler('Session update failed', 500));
     }
+    await updatedSession.save()
 
-    await scheduleSession(session._id)
+    // Optionally schedule the session (if you have a scheduling service)
+    await scheduleSession(updatedSession._id);
 
     res.status(200).json({
         success: true,

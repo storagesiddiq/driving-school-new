@@ -22,6 +22,17 @@ import Instructors from "./Components/Owner/Instructors";
 import SingleInstructor from "./Components/Owner/SingleInstructor"
 import Courses from "./Components/Owner/Courses";
 import SingleCourse from "./Components/Owner/SingleCourse";
+import Services from "./Components/Owner/Services";
+import Vehicle from "./Components/Owner/Vehicle";
+import RegisterUsers from "./Components/Instructors/RegisterUsers";
+import InstHome from "./Components/Instructors/InstHome";
+import CommonSingleCourse from "./Components/CommonSingleCourse";
+import Sessions from "./Components/Instructors/Sessions";
+import Report from "./Components/Instructors/Report";
+import ChatPage from "./Components/Chat/ChatPage";
+import LHome from "./Components/Learner/LHome";
+import CoursesPage from "./Components/Learner/CoursePage";
+import CommonSingleInstructor from "./Components/CommonSingleInstructor";
 
 export default function App() {
     const dispatch = useDispatch();
@@ -34,23 +45,27 @@ export default function App() {
     const user = useSelector(loginAuthUser);
     const isAdmin = user?.role === "admin";
     const isOwner = user?.role === "owner";
+    const isInst = user?.role === "instructor";
+    const isLearner = user?.role === "learner";
 
     return (
         <>
             <Navbar />
             <Routes>
-                <Route
-                    path="/"
-                    element={isAuthenticated ?
-                         (
-                            isAdmin && <Navigate to="/admin/dashboard" /> ||
-                            isOwner && <Navigate to="/owner/dashboard" /> 
-                        ) 
-                         : <Home />}
+                <Route path="/" element={isAuthenticated ?
+                    (
+                        isAdmin && <Navigate to="/admin/dashboard" /> ||
+                        isOwner && <Navigate to="/owner/dashboard" /> ||
+                        isInst && <Navigate to="/instructor/home" /> ||
+                        isLearner && <Navigate to="/home" /> 
+                    )
+                    : <Home />}
                 />
 
                 {/* Reset Password */}
                 <Route path="/password/reset/:token" element={<ResetPassword />} />
+                <Route path="/course/:id" element={<CommonSingleCourse />} />
+                <Route path="/instrcutor/:id" element={<CommonSingleInstructor />} />
 
                 {/* Admin Routes */}
                 <Route
@@ -70,13 +85,11 @@ export default function App() {
 
 
                 {/* Owner Routes */}
-                <Route
-                    path="/owner/*"
-                    element={
-                        <ProtectedRoute isOwner={true}>
-                            <OwnerHome />
-                        </ProtectedRoute>
-                    }
+                <Route path="/owner/*" element={
+                    <ProtectedRoute isOwner={true}>
+                        <OwnerHome />
+                    </ProtectedRoute>
+                }
                 >
                     <Route path="dashboard" element={<OwnerDashboard />} />
                     <Route path="profile" element={<Profile />} />
@@ -84,13 +97,40 @@ export default function App() {
                     <Route path="instructor/:id" element={<SingleInstructor />} />
                     <Route path="courses" element={<Courses />} />
                     <Route path="course/:id" element={<SingleCourse />} />
-
+                    <Route path="services" element={<Services />} />
+                    <Route path="vehicles" element={<Vehicle />} />
                 </Route>
+
+                {/* Instrictor Routes */}
+                <Route path="/instructor/home" element={<ProtectedRoute isInst={true}><InstHome /></ProtectedRoute>} />
+                <Route path="/instructor/profile" element={<ProtectedRoute isInst={true}><Profile /></ProtectedRoute>} />
+                <Route path="/instructor/sessions" element={<ProtectedRoute isInst={true}><RegisterUsers /></ProtectedRoute>} />
+                <Route path="/instructor/attendance" element={<ProtectedRoute isInst={true}><Sessions /></ProtectedRoute>} />
+                <Route path="/instructor/report" element={<ProtectedRoute isInst={true}><Report /></ProtectedRoute>} />
+                <Route path="/instructor/chat" element={<ProtectedRoute isInst={true}><ChatPage /></ProtectedRoute>} />
+
+
+
+                {/* Learner Routes */}
+                <Route path="/home" element={<ProtectedRoute isLearner={true}><LHome /></ProtectedRoute>} />
+                <Route path="/courses" element={<ProtectedRoute isLearner={true}><CoursesPage /></ProtectedRoute>} />
+
+
+                <Route path="*" element={isAuthenticated ?
+                    (
+                        isAdmin && <Navigate to="/admin/dashboard" /> ||
+                        isOwner && <Navigate to="/owner/dashboard" /> ||
+                        isInst && <Navigate to="/instructor/home" />  ||
+                        isLearner && <Navigate to="/home" /> 
+                    )
+                    : <Home />} />
+
+
             </Routes>
             <BottomMenu />
-            
+
             {/* Only show footer when the user is not an admin */}
-            {!isAdmin && !isOwner && <Footer />}
+            {!isAdmin && !isOwner && !isInst && <Footer />}
         </>
     );
 }

@@ -84,6 +84,10 @@ const registerlearnerSchema = new mongoose.Schema({
         enum: ['Pending', 'Approved', 'Rejected'],
         default: 'Pending',
     },
+    sessionStatus :{
+        type: mongoose.Schema.ObjectId,
+        ref: 'Session'
+    }
 });
 
 const courseSchema = new mongoose.Schema({
@@ -91,6 +95,10 @@ const courseSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'drivingSchool',
         required: true,
+    },
+    price:{
+        type: String,
+        required: [true, 'Please enter Price'],
     },
     title: {
         type: String,

@@ -19,7 +19,8 @@ exports.getAllCourses = catchAsyncError(async (req, res, next) => {
         .populate('services', 'serviceName description')
         .populate('instructor', 'name email')
         .populate('learners', 'learnerName learnerEmail')
-        .populate('reviews', 'rating comment');
+        .populate('reviews', 'rating comment')
+        .populate('drivingSchool', 'drivingSchoolName location avatar');
 
     // Calculate total members for learners, services, and vehicles for each course
     const coursesWithTotals = courses.map(course => {
@@ -52,12 +53,13 @@ exports.getCourseById = catchAsyncError(async (req, res, next) => {
 
     // Find the course by ID and populate related fields
     const course = await Course.findOne({ _id: req.params.id, drivingSchool: drivingSchool._id })
-        .populate('vehicles', 'name registrationNumber type lastServiceDate nextServiceDate usedInCourses  certificates ')
+        .populate('vehicles', 'name registrationNumber type lastServiceDate nextServiceDate  certificates ')
         .populate('services', 'serviceName serviceType vehicleType price certificatesIssued description')
-        .populate('instructor', 'name email')
+        .populate('instructor', 'avatar name email')
         .populate('learners', 'learnerName learnerEmail')
         .populate('sessions', 'sessionDate sessionTime sessionInstructor')
-        .populate('reviews', 'rating comment reviewerName');
+        .populate('reviews', 'rating comment reviewerName')
+        .populate('drivingSchool', 'drivingSchoolName location avatar');
 
     if (!course) {
         return next(new errorHandler('Course not found or does not belong to your Driving School', 404));
@@ -93,6 +95,7 @@ exports.createCourse = catchAsyncError(async (req, res, next) => {
         description,
         duration,
         instructor,
+        price
     } = req.body;
 
     // Check if the driving school is owned by the logged-in user
@@ -126,6 +129,7 @@ exports.createCourse = catchAsyncError(async (req, res, next) => {
         description,
         duration,
         instructor,
+        price
     });
 
     // Add the course ID to each valid instructor's courses array

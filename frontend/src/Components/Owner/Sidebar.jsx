@@ -5,6 +5,9 @@ import { clearStatus, logoutUser } from '../../slices/authSlice';
 import { IoLogOut } from "react-icons/io5";
 import { LuSchool } from "react-icons/lu";
 import { FaRegUserCircle } from "react-icons/fa";
+import { MdOutlineMiscellaneousServices } from "react-icons/md";
+import { RiGraduationCapFill } from "react-icons/ri";
+import { FaCar } from "react-icons/fa";
 
 const Sidebar = () => {
     const navigate = useNavigate()
@@ -26,10 +29,11 @@ const Sidebar = () => {
                         </Link>
                     </li>
                     <li>
-                        <Link to="/owner/profile" className="flex items-center p-2 hover:bg-gray-700 rounded">
-                             <FaRegUserCircle  className="mr-2"/> Profile
+                        <Link to="/owner/registered-users" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                             <FaRegUserCircle  className="mr-2"/> Registered Users
                         </Link>
                     </li>
+                 
                     <li>
                         <Link to="/owner/instructors" className="flex items-center p-2 hover:bg-gray-700 rounded">
                              <FaRegUserCircle  className="mr-2"/> Instructors
@@ -37,7 +41,22 @@ const Sidebar = () => {
                     </li>
                     <li>
                         <Link to="/owner/courses" className="flex items-center p-2 hover:bg-gray-700 rounded">
-                             <FaRegUserCircle  className="mr-2"/> Courses
+                             <RiGraduationCapFill  className="mr-2"/> Courses
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/owner/services" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                             <MdOutlineMiscellaneousServices  className="mr-2"/> Services
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/owner/vehicles" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                             <FaCar  className="mr-2"/> Vehicles
+                        </Link>
+                    </li>
+                    <li>
+                        <Link to="/owner/profile" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                             <FaRegUserCircle  className="mr-2"/> Profile
                         </Link>
                     </li>
                     <li className='bg-red-500'>

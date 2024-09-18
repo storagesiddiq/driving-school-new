@@ -125,7 +125,7 @@ export const deleteInstructor = createAsyncThunk('owner/deleteInstructor',
 export const getAllCourses = createAsyncThunk('instructor/getAllCourses',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await API.get('/courses');
+            const response = await API.get('/get-courses');
             return response.data;
         } catch (error) {
             console.error('Error loading user:', error.response?.data?.message || 'Unknown error');
@@ -138,7 +138,7 @@ export const getAllCourses = createAsyncThunk('instructor/getAllCourses',
 export const getSingleCourse = createAsyncThunk('instructor/getSingleCourse',
     async (id, { rejectWithValue }) => {
         try {
-            const response = await API.get(`/course/${id}`);
+            const response = await API.get(`/get-course/${id}`);
             return response.data;
         } catch (error) {
             console.error('Error loading user:', error.response?.data?.message || 'Unknown error');
@@ -148,8 +148,11 @@ export const getSingleCourse = createAsyncThunk('instructor/getSingleCourse',
 );
 
 //Create Course
-export const addCourse = createAsyncThunk('owner/addCourse', async (formData, { rejectWithValue }) => {
+export const addCourse = createAsyncThunk('owner/addCourse', async (formData,
+     { rejectWithValue }) => {
     try {
+        console.log(formData);
+        
         const response = await API.post('/create-course', formData);
         return response.data;
     } catch (error) {
@@ -158,7 +161,7 @@ export const addCourse = createAsyncThunk('owner/addCourse', async (formData, { 
 });
 
 
-//Delete Instructor
+//Delete Course
 export const deleteCourse = createAsyncThunk('owner/deleteCourse',
     async (id, { rejectWithValue }) => {
         try {
@@ -169,6 +172,56 @@ export const deleteCourse = createAsyncThunk('owner/deleteCourse',
         }
     });
 
+//Update Course
+export const updateCourse = createAsyncThunk('owner/updateCourse',
+    async ({id,data}, { rejectWithValue }) => {
+        try {
+            const response = await API.put(`/course/${id}`,data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    });
+
+
+//GET All Registered Users
+export const getAllRegUsers = createAsyncThunk('users/getAllRegUsers',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await API.get('/get-courses');
+            return response.data;
+        } catch (error) {
+            console.error('Error loading user:', error.response?.data?.message || 'Unknown error');
+            return rejectWithValue(error.response?.data?.message);
+        }
+    }
+);
+
+//GET Single Registered Users
+export const getSingleRegUsers = createAsyncThunk('users/getSingleRegUsers',
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await API.get(`/get-course/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error loading user:', error.response?.data?.message || 'Unknown error');
+            return rejectWithValue(error.response?.data?.message);
+        }
+    }
+);
+
+//Give Access to Registered Users 
+export const accessRegUsers = createAsyncThunk('users/accessRegUsers',
+    async ({id, data}, { rejectWithValue }) => {
+        try {
+            const response = await API.put(`/course/${id}`,data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    });
+
+
 const ownerSlice = createSlice({
     name: 'owner',
     initialState: {
@@ -177,6 +230,8 @@ const ownerSlice = createSlice({
         instructors: [],
         instructor: [],
         school: [],
+        regUsers:[],
+        regUser:[],
         status: 'idle',
         error: null,
         isDeleted: false,
@@ -218,6 +273,67 @@ const ownerSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+           //GetAll RegUsers
+           .addCase(getAllRegUsers.pending, (state) => {
+            state.status = 'loading';
+            state.error = null;
+        })
+        .addCase(getAllRegUsers.fulfilled, (state, action) => {
+            state.status = 'succeeded';
+            state.error = null;
+            state.regUsers = action.payload.registeredLearners
+        })
+        .addCase(getAllRegUsers.rejected, (state, action) => {
+            state.status = 'failed';
+            state.error = action.payload || 'server Error';
+        })
+
+        //GetSingle RegUsers
+        .addCase(getSingleRegUsers.pending, (state) => {
+            state.status = 'loading';
+            state.error = null;
+        })
+        .addCase(getSingleRegUsers.fulfilled, (state, action) => {
+            state.status = 'succeeded';
+            state.error = null;
+            state.regUser = action.payload.registeredLearners
+        })
+        .addCase(getSingleRegUsers.rejected, (state, action) => {
+            state.status = 'failed';
+            state.error = action.payload || 'server Error';
+        })
+
+              //Give access to Reg Users
+              .addCase(accessRegUsers.pending, (state) => {
+                state.status = 'loading';
+                state.error = null;
+            })
+            .addCase(accessRegUsers.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.error = null;
+                state.isUpdated = true
+            })
+            .addCase(accessRegUsers.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.payload || 'server Error';
+            })
+
+
+
+          //update Course
+          .addCase(updateCourse.pending, (state) => {
+            state.status = 'loading';
+            state.error = null;
+        })
+        .addCase(updateCourse.fulfilled, (state, action) => {
+            state.status = 'succeeded';
+            state.error = null;
+            state.isUpdated = true
+        })
+        .addCase(updateCourse.rejected, (state, action) => {
+            state.status = 'failed';
+            state.error = action.payload || 'server Error';
+        })
          //GetSingle Course
          .addCase(getSingleCourse.pending, (state) => {
             state.status = 'loading';
@@ -230,7 +346,7 @@ const ownerSlice = createSlice({
         })
         .addCase(getSingleCourse.rejected, (state, action) => {
             state.status = 'failed';
-            state.error = action.payload || 'Authentication failed';
+            state.error = action.payload || 'server Error';
         })
         //Create Course 
         .addCase(addCourse.pending, (state) => {
@@ -259,7 +375,7 @@ const ownerSlice = createSlice({
         })
         .addCase(getAllCourses.rejected, (state, action) => {
             state.status = 'failed';
-            state.error = action.payload || 'Authentication failed';
+            state.error = action.payload || 'server Error';
         })
 
 
@@ -275,7 +391,7 @@ const ownerSlice = createSlice({
             })
             .addCase(deleteCourse.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload || 'server Error';
             })
 
             //Delete Instructor
@@ -290,7 +406,7 @@ const ownerSlice = createSlice({
             })
             .addCase(deleteInstructor.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload.message || 'server Error';
             })
 
             //Take Attendance
@@ -305,7 +421,7 @@ const ownerSlice = createSlice({
             })
             .addCase(takeInstructorAttendance.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload || 'server Error';
             })
 
             //GetSingle Instructor
@@ -320,7 +436,7 @@ const ownerSlice = createSlice({
             })
             .addCase(getSingleInstructor.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload || 'server Error';
             })
             //Create Instructors 
             .addCase(addInstructor.pending, (state) => {
@@ -349,7 +465,7 @@ const ownerSlice = createSlice({
             })
             .addCase(getAllInstructors.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload || 'server Error';
             })
 
             //update School
@@ -364,7 +480,7 @@ const ownerSlice = createSlice({
             })
             .addCase(updateMySchool.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload || 'server Error';
             })
 
             //patch School avatar
@@ -379,7 +495,7 @@ const ownerSlice = createSlice({
             })
             .addCase(patchMySchoolAvatar.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload || 'server Error';
             })
 
             //patch School banner
@@ -394,7 +510,7 @@ const ownerSlice = createSlice({
             })
             .addCase(patchMySchoolBanner.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload || 'server Error';
             })
             //get Single Schools
             .addCase(getMySchool.pending, (state) => {
@@ -408,7 +524,7 @@ const ownerSlice = createSlice({
             })
             .addCase(getMySchool.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload || 'server Error';
             })
     }
 })

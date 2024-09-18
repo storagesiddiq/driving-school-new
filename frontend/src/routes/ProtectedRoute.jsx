@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { loginAuthStatus, loginAuthUser, loginIsAuthenticated } from '../slices/authSlice';
 import Spinner from '../utils/Spinner';
 
-const ProtectedRoute = ({ children, isAdmin, isOwner }) => {
+const ProtectedRoute = ({ children, isAdmin, isOwner, isInst, isLearner }) => {
     const isAuthenticated = useSelector(loginIsAuthenticated);
     const authStatus = useSelector(loginAuthStatus);
     const user = useSelector(loginAuthUser);
@@ -14,26 +14,42 @@ const ProtectedRoute = ({ children, isAdmin, isOwner }) => {
         return <Spinner />;
     }
 
-    // Redirect to home if not authenticated
     if (!isAuthenticated) {
         return <Navigate to="/" />;
     }
 
-    // Handle admin access
     if (isAdmin && user?.role !== 'admin') {
         return <Navigate to="/" />;
     }
 
-    // Handle user access (non-admin)
     if (!isAdmin && user?.role === 'admin') {
-        return <Navigate to="/admin/dashboard" />;
+        return children;
     }
 
-    // Handle user access (non-admin)
     if (!isOwner && user?.role === 'owner') {
-        return <Navigate to="/owner/dashboard" />;
+        return children;
     }
 
+    if (isOwner && user?.role !== 'owner') {
+        return <Navigate to="/" />;
+    }
+
+    if (isInst && user?.role === 'instructor') {
+        return children;
+    }
+
+    if (isInst && user?.role !== 'instructor') {
+        return <Navigate to="/" />;
+    }
+
+    
+    if (isLearner && user?.role === 'learner') {
+        return children;
+    }
+
+    if (isLearner && user?.role !== 'learner') {
+        return <Navigate to="/" />;
+    }
 
     // If all conditions are met, render the children (protected content)
     return children;

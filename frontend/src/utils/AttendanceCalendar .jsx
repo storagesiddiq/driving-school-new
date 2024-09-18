@@ -4,11 +4,13 @@ import 'react-calendar/dist/Calendar.css';
 import { takeInstructorAttendance, IsUpdated, getSingleInstructor, clearUpdated } from '../slices/ownerSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
-const AttendanceCalendar = ({ id, attendaceData, fromDate, totalAttendanceDays, totalPresentDays }) => {
+const AttendanceCalendar = ({isAdmin, id, attendaceData, fromDate, totalAttendanceDays, totalPresentDays }) => {
     const [selectedDate, setSelectedDate] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
     const isUpdated = useSelector(IsUpdated)
     const dispatch = useDispatch()
+    console.log(fromDate);
+    
 
     const onDateClick = (date) => {
         setSelectedDate(date);
@@ -68,23 +70,23 @@ const AttendanceCalendar = ({ id, attendaceData, fromDate, totalAttendanceDays, 
         <div className="border-2 pt-10 p-4 mx-auto max-w-4xl">
             <h2 className="text-center text-2xl mb-6 font-semibold">Attendance Calendar</h2>
 
-            <div className="flex flex-col lg:flex-row items-center justify-between space-y-6 lg:space-y-0 lg:space-x-6">
+            <div className="flex flex-col items-center justify-between space-y-6 lg:space-y-0 lg:space-x-6">
                 {/* Calendar */}
-                <div className="w-full lg:w-1/2">
+                <div className="w-full">
                     <Calendar
-                        onClickDay={onDateClick}
+                        onClickDay={isAdmin ? onDateClick : ''}
                         minDate={minDate}
                         tileClassName={tileClassName}
                     />
                 </div>
 
                 {/* Attendance Summary */}
-                <div className="w-full lg:w-1/2 flex flex-col items-start justify-center bg-gray-100 p-4 rounded shadow-md">
+           {isAdmin && <div className="mt-3 w-full flex flex-col items-start justify-center bg-gray-100 p-4 rounded shadow-md">
                     <p className="text-lg mb-2">Total Days: <span className="font-bold">{totalAttendanceDays}</span></p>
                     <p className="text-lg mb-2">Start Date: <span className="font-bold">{fromDate}</span></p>
                     <p className="text-lg mb-2">Present Days: <span className="font-bold">{totalPresentDays}</span></p>
                     <p className="text-lg mb-2">Absent Days: <span className="font-bold">{totalAttendanceDays - totalPresentDays}</span></p>
-                </div>
+                </div>}
             </div>
 
             {/* Modal for marking attendance */}

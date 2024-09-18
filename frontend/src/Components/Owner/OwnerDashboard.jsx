@@ -23,30 +23,30 @@ const OwnerDashboard = () => {
 
     useEffect(() => {
         dispatch(getMySchool());
-        if(isUpdated){
+        if (isUpdated) {
             setShowToast(true);
             const timer = setTimeout(() => {
-              setShowToast(false);
+                setShowToast(false);
             }, 1000);
             dispatch(clearUpdated())
             setShowModal(false);
-            return () => clearTimeout(timer); 
+            return () => clearTimeout(timer);
         }
-        if(isPatched){
+        if (isPatched) {
             setShowToast(true);
             const timer = setTimeout(() => {
-              setShowToast(false);
+                setShowToast(false);
             }, 1000);
             dispatch(clearPatched())
-            return () => clearTimeout(timer); 
+            return () => clearTimeout(timer);
         }
-        if(error){
+        if (error) {
             setShowToast(true);
             const timer = setTimeout(() => {
-              setShowToast(false);
+                setShowToast(false);
             }, 1000);
             dispatch(clearError())
-            return () => clearTimeout(timer); 
+            return () => clearTimeout(timer);
         }
     }, [dispatch, isPatched, error, isUpdated]);
 
@@ -65,7 +65,7 @@ const OwnerDashboard = () => {
 
     const handleFileChange = (e, type) => {
         console.log("TRIGGERERD");
-        
+
         const file = e.target.files[0];
         if (type === 'banner') {
             const formData = new FormData()
@@ -124,8 +124,8 @@ const OwnerDashboard = () => {
 
     const renderInstructors = () => (
         <div>
-            {school?.instructors?.length ? (
-                school.instructors.map((instructor) => (
+            {school?.Instructors?.length ? (
+                school.Instructors.map((instructor) => (
                     <div key={instructor._id} className="border shadow-sm p-4 rounded-md flex items-center gap-4 mb-4">
                         <img
                             src={instructor?.instructor?.avatar}
@@ -170,165 +170,168 @@ const OwnerDashboard = () => {
         </div>
     );
 
-    return (<>
-          <Toast
-        onClose={() => setShowToast(false)}
-        show={showToast}
-        delay={3000}
-        autohide
-        style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          zIndex: 9999,
-        }}
-      >
-        <Toast.Header>
-          <strong className="mr-auto">Success</strong>
-        </Toast.Header>
-        {isPatched && <Toast.Body className='bg-success'>Image Updated Successfully!</Toast.Body>}
-        {error && <Toast.Body className='bg-danger'>{error}</Toast.Body>}
-      </Toast>
+    console.log(school);
+    
 
-        <div className="p-2 bg-gray-100 min-h-screen">
-            {/* Banner Image and Avatar */}
-            <div className="relative">
-                <img
-                    src={school?.drivingSchool?.bannerImg}
-                    alt="Banner"
-                    className="w-full h-48 object-cover rounded-lg"
-                />
-                <button
-                    onClick={() => document.getElementById('banner-upload').click()}
-                    className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg">
-                    <Edit className="w-5 h-5 text-gray-700" />
-                </button>
-                <input
-                    type="file"
-                    id="banner-upload"
-                    accept="image/*"
-                    onChange={(e) => handleFileChange(e, 'banner')}
-                    className="hidden"
-                />
-                <div className="z-30 absolute bottom-0 left-4 transform translate-y-1/2 rounded-t-lg">
+    return (
+        <>
+            <Toast
+                onClose={() => setShowToast(false)}
+                show={showToast}
+                delay={3000}
+                autohide
+                style={{
+                    position: 'fixed',
+                    top: '20px',
+                    right: '20px',
+                    zIndex: 9999,
+                }}>
+                <Toast.Header>
+                    <strong className="mr-auto">Success</strong>
+                </Toast.Header>
+                {isPatched && <Toast.Body className='bg-success'>Image Updated Successfully!</Toast.Body>}
+                {error && <Toast.Body className='bg-danger'>{error}</Toast.Body>}
+            </Toast>
+
+            <div className="p-2 bg-gray-100 min-h-screen">
+                {/* Banner Image and Avatar */}
+                <div className="relative">
                     <img
-                        src={school?.drivingSchool?.avatar}
-                        alt={`${school?.drivingSchool?.drivingSchoolName} Avatar`}
-                        className="w-24 h-24 shadow-md rounded-full border border-gray-700"
+                        src={school?.drivingSchool?.bannerImg}
+                        alt="Banner"
+                        className="w-full h-48 object-cover rounded-lg"
                     />
                     <button
-                        onClick={() => document.getElementById('avatar-upload').click()}
-                        className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg"
-                    >
+                        onClick={() => document.getElementById('banner-upload').click()}
+                        className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-lg">
                         <Edit className="w-5 h-5 text-gray-700" />
                     </button>
                     <input
                         type="file"
-                        id="avatar-upload"
+                        id="banner-upload"
                         accept="image/*"
-                        onChange={(e) => handleFileChange(e, 'avatar')}
+                        onChange={(e) => handleFileChange(e, 'banner')}
                         className="hidden"
                     />
-                </div>
-            </div>
-
-            {/* School Details */}
-            <div className="bg-white p-6 rounded-lg shadow-md relative">
-                <div className="lg:flex lg:items-start lg:gap-6">
-                    <div className="lg:w-1/2 mt-6">
-                       <div className='flex gap-3'>
-                         <h2 className="text-3xl font-bold text-gray-800">{school?.drivingSchool?.drivingSchoolName}</h2>
-                         <button
-                            onClick={() => setShowModal(true)}
-                            className="mt-2 text-primary-dark hover:underline"
+                    <div className="z-30 absolute bottom-0 left-4 transform translate-y-1/2 rounded-t-lg">
+                        <img
+                            src={school?.drivingSchool?.avatar}
+                            alt={`${school?.drivingSchool?.drivingSchoolName} Avatar`}
+                            className="w-24 h-24 shadow-md rounded-full border border-gray-700"
+                        />
+                        <button
+                            onClick={() => document.getElementById('avatar-upload').click()}
+                            className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg"
                         >
-                            <Edit className="w-5 h-5 inline-block" /> Edit
+                            <Edit className="w-5 h-5 text-gray-700" />
                         </button>
-                       </div>
-                        <p className="text-gray-500">{school?.drivingSchool?.location}</p>
-                     
+                        <input
+                            type="file"
+                            id="avatar-upload"
+                            accept="image/*"
+                            onChange={(e) => handleFileChange(e, 'avatar')}
+                            className="hidden"
+                        />
                     </div>
+                </div>
 
-                    {/* Owner Details */}
-                    <div className="lg:w-1/2 lg:mt-3 lg:mt-0 sm:mt-5">
-                        <div className="flex items-center gap-4 mt-4">
-                            <img
-                                src={school?.drivingSchool?.owner?.avatar || 'default-owner-avatar.jpg'}
-                                width="60"
-                                height="60"
-                                className="rounded-full border border-gray-300"
-                                alt="Owner Avatar"
-                            />
-                            <div>
-                                <p className="text-lg font-semibold text-gray-800">{school?.drivingSchool?.owner?.name}</p>
-                                <p className="text-sm text-gray-500">{school?.drivingSchool?.owner?.email}</p>
+                {/* School Details */}
+                <div className="bg-white p-6 rounded-lg shadow-md relative">
+                    <div className="lg:flex lg:items-start lg:gap-6">
+                        <div className="lg:w-1/2 mt-6">
+                            <div className='flex gap-3'>
+                                <h2 className="text-3xl font-bold text-gray-800">{school?.drivingSchool?.drivingSchoolName}</h2>
+                                <button
+                                    onClick={() => setShowModal(true)}
+                                    className="mt-2 text-primary-dark hover:underline"
+                                >
+                                    <Edit className="w-5 h-5 inline-block" /> Edit
+                                </button>
+                            </div>
+                            <p className="text-gray-500">{school?.drivingSchool?.location}</p>
+
+                        </div>
+
+                        {/* Owner Details */}
+                        <div className="lg:w-1/2 lg:mt-3 lg:mt-0 sm:mt-5">
+                            <div className="flex items-center gap-4 mt-4">
+                                <img
+                                    src={school?.drivingSchool?.owner?.avatar || 'default-owner-avatar.jpg'}
+                                    width="60"
+                                    height="60"
+                                    className="rounded-full border border-gray-300"
+                                    alt="Owner Avatar"
+                                />
+                                <div>
+                                    <p className="text-lg font-semibold text-gray-800">{school?.drivingSchool?.owner?.name}</p>
+                                    <p className="text-sm text-gray-500">{school?.drivingSchool?.owner?.email}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="mt-6 w-full flex overflow-x-auto gap-4">
-                    <button
-                        className={`w-1/3 py-2 px-4 rounded-lg text-xs font-semibold ${activeTab === 'courses' ? 'bg-primary-dark text-white' : 'bg-gray-200 text-gray-700'} hover:text-white hover:bg-primary-light`}
-                        onClick={() => setActiveTab('courses')}
-                    >
-                        Courses
-                    </button>
-                    <button
-                        className={`w-1/3 py-2 px-4 rounded-lg text-xs font-semibold ${activeTab === 'instructors' ? 'bg-primary-dark text-white' : 'bg-gray-200 text-gray-700'} hover:text-white hover:bg-primary-light`}
-                        onClick={() => setActiveTab('instructors')}
-                    >
-                        Instructors
-                    </button>
-                    <button
-                        className={`w-1/3 py-2 px-4 rounded-lg text-xs font-semibold ${activeTab === 'learners' ? 'bg-primary-dark text-white' : 'bg-gray-200 text-gray-700'} hover:text-white hover:bg-primary-light`}
-                        onClick={() => setActiveTab('learners')}
-                    >
-                        Learners
-                    </button>
-                </div>
-            </div>
-
-            <div className="bg-white p-6 rounded-lg shadow-md">
-                {activeTab === 'courses' && renderCourses()}
-                {activeTab === 'instructors' && renderInstructors()}
-                {activeTab === 'learners' && renderLearners()}
-            </div>
-
-            {/* Modal for updating driving school name and location */}
-            <Modal  fullscreen="md-down" centered show={showModal} onHide={() => setShowModal(false)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Update School Details</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <Form onSubmit={handleFormSubmit}>
-                        <Form.Group controlId="formDrivingSchoolName">
-                            <Form.Label>Driving School Name</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Enter driving school name"
-                                name="drivingSchoolName"
-                                value={formData.drivingSchoolName}
-                                onChange={handleInputChange}
-                            />
-                        </Form.Group>
-                        <Form.Group controlId="formLocation">
-                            <Form.Label>Location</Form.Label>
-                            <Form.Control
-                                type="text"
-                                placeholder="Enter location"
-                                name="location"
-                                value={formData.location}
-                                onChange={handleInputChange}
-                            />
-                        </Form.Group>
-                        <button className='w-full bg-primary-dark rounded-md text-white py-2 mt-10' variant="primary" type="submit">
-                            Update
+                    <div className="mt-6 w-full flex overflow-x-auto gap-4">
+                        <button
+                            className={`w-1/3 py-2 px-4 rounded-lg text-xs font-semibold ${activeTab === 'courses' ? 'bg-primary-dark text-white' : 'bg-gray-200 text-gray-700'} hover:text-white hover:bg-primary-light`}
+                            onClick={() => setActiveTab('courses')}
+                        >
+                            Courses
                         </button>
-                    </Form>
-                </Modal.Body>
-            </Modal>
-        </div>
+                        <button
+                            className={`w-1/3 py-2 px-4 rounded-lg text-xs font-semibold ${activeTab === 'instructors' ? 'bg-primary-dark text-white' : 'bg-gray-200 text-gray-700'} hover:text-white hover:bg-primary-light`}
+                            onClick={() => setActiveTab('instructors')}
+                        >
+                            Instructors
+                        </button>
+                        <button
+                            className={`w-1/3 py-2 px-4 rounded-lg text-xs font-semibold ${activeTab === 'learners' ? 'bg-primary-dark text-white' : 'bg-gray-200 text-gray-700'} hover:text-white hover:bg-primary-light`}
+                            onClick={() => setActiveTab('learners')}
+                        >
+                            Learners
+                        </button>
+                    </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-lg shadow-md">
+                    {activeTab === 'courses' && renderCourses()}
+                    {activeTab === 'instructors' && renderInstructors()}
+                    {activeTab === 'learners' && renderLearners()}
+                </div>
+
+                {/* Modal for updating driving school name and location */}
+                <Modal fullscreen="md-down" centered show={showModal} onHide={() => setShowModal(false)}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>Update School Details</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        <Form onSubmit={handleFormSubmit}>
+                            <Form.Group controlId="formDrivingSchoolName">
+                                <Form.Label>Driving School Name</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter driving school name"
+                                    name="drivingSchoolName"
+                                    value={formData.drivingSchoolName}
+                                    onChange={handleInputChange}
+                                />
+                            </Form.Group>
+                            <Form.Group controlId="formLocation">
+                                <Form.Label>Location</Form.Label>
+                                <Form.Control
+                                    type="text"
+                                    placeholder="Enter location"
+                                    name="location"
+                                    value={formData.location}
+                                    onChange={handleInputChange}
+                                />
+                            </Form.Group>
+                            <button className='w-full bg-primary-dark rounded-md text-white py-2 mt-10' variant="primary" type="submit">
+                                Update
+                            </button>
+                        </Form>
+                    </Modal.Body>
+                </Modal>
+            </div>
         </>
     );
 };

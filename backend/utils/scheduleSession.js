@@ -20,7 +20,7 @@ async function scheduleSession(sessionId) {
 
     // Calculate endDate based on course duration
     const endDate = new Date(startDateObj);
-    endDate.setDate(endDate.getDate() + (course.duration * 7)); // course.duration is in weeks
+    endDate.setDate(endDate.getDate() + (course.duration * 7) + 1);
 
     // Remove existing attendance records for the given session, learner, instructor, and course
     await Attendance.deleteMany({
@@ -29,6 +29,8 @@ async function scheduleSession(sessionId) {
 
     // Automatically create or update attendance records for each session date
     let currentDate = new Date(startDateObj);
+    currentDate.setDate(currentDate.getDate() + 1);
+
     while (currentDate <= endDate) {
         const attendanceRecord = new Attendance({
             session: session._id,

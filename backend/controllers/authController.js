@@ -9,7 +9,8 @@ const sendEmail = require('../utils/email')
 const crypto = require('crypto')
 const Learner = require('../models/learnerModel')
 const getLocation = require('../utils/getLocation')
-
+const {Session} = require('../models/courseModel');
+const searchFeatures = require("../utils/searchFeature");
 // To register user
 exports.registerUser = catchAsyncError(async (req, res, next) => {
     try {
@@ -251,7 +252,6 @@ exports.getUserLocation = catchAsyncError(async (req, res, next) => {
     }
 })
 
-
 // Endpoint to handle heartbeat
 exports.getActiveHeartbeat = catchAsyncError(async (req, res) => {
 
@@ -270,3 +270,46 @@ exports.getActiveHeartbeat = catchAsyncError(async (req, res) => {
         res.status(500).json({ success: false, message: 'Internal server error' });
     }
 })
+
+exports.getMatchUsers = catchAsyncError(async (req, res, next) => {
+    let sessions;
+
+    // Find the current user
+    const currUser = await User.findById(req.user.id);
+    if (!currUser) {
+        return next(new Error(`User not found with id ${req.user.id}`));
+    }
+
+    // Determine the user's role and fetch the corresponding sessions
+    if (currUser.role === 'instructor') {
+        // If the user is an instructor, find sessions where they are the instructor and populate learners
+        sessions = await Session.find({ instructor: req.user.id })
+            .populate('learner', 'avatar name email');
+    } else if (currUser.role === 'learner') {
+        // If the user is a learner, find sessions where they are the learner and populate instructors
+        sessions = await Session.find({ learner: req.user.id })
+            .populate('instructor', 'avatar name email');
+    } else {
+        return next(new Error('Unauthorized access - invalid role.'));
+    }
+
+    // Extract and format the learners or instructors based on the user's role
+    const relatedUsers = sessions.map(session => {
+        return currUser.role === 'instructor' ? session.learner : session.instructor;
+    });
+
+    // Create a query to filter the related users based on search features
+    let query = User.find({ _id: { $in: relatedUsers.map(user => user._id) } });
+
+    const features = new searchFeatures(query, req.query).userSearch();
+
+    // Execute the filtered query
+    const matchedUsers = await features.exec();
+
+    res.status(200).json({
+        success: true,
+        count: matchedUsers.length,
+        users: matchedUsers
+    });
+});
+

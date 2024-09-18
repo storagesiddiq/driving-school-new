@@ -38,5 +38,6 @@ router.route('/password/reset/:token').post(Auth.resetPassword)
 router.get('/location',isAuthenticatedUser, Auth.getUserLocation)
 
 router.get('/user/heartbeat',isAuthenticatedUser, Auth.getActiveHeartbeat)
+router.get('/matched-users',isAuthenticatedUser, Auth.getMatchUsers) 
 
 module.exports = router

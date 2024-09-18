@@ -1,31 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { addCourse, allCourses, allInstructors, clearCreated, clearDeleted, clearError, deleteCourse, Error, getAllCourses, getAllInstructors, IsCreated, IsDeleted, Status } from '../../slices/ownerSlice';
+import { addCourse, allCourses, allInstructors, clearCreated, clearDeleted, clearError, clearUpdated, deleteCourse, Error, getAllCourses, getAllInstructors, IsCreated, IsDeleted, IsUpdated, Status, updateCourse } from '../../slices/ownerSlice';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Button, Modal, Form, Toast, ToastContainer } from 'react-bootstrap';
 import { FaTrashAlt } from 'react-icons/fa';
 import Spinner from '../../utils/Spinner';
 import Select from 'react-select';
+import { FaEdit } from 'react-icons/fa';
+import { allVehicles, getAllVehicles } from '../../slices/vehicleSlice';
+import { allServices, getAllServices } from '../../slices/serviceSlice';
 
 const Courses = () => {
     const dispatch = useDispatch();
     const courses = useSelector(allCourses);
     const instructors = useSelector(allInstructors);
+    const vehicles = useSelector(allVehicles);
+    const services = useSelector(allServices);
+
     const status = useSelector(Status);
     const error = useSelector(Error);
     const isCreated = useSelector(IsCreated);
     const isDeleted = useSelector(IsDeleted);
+    const isUpdated = useSelector(IsUpdated);
+
     const navigate = useNavigate();
 
     const [showModal, setShowModal] = useState(false);
+    const [showModal2, setShowModal2] = useState(false);
+
     const [formData, setFormData] = useState({
         title: '',
+        price: 0,
         vehicles: [],
         services: [],
         description: '',
         duration: '',
-        instructor: [] // Store instructor IDs here
+        instructor: []
     });
+    const [selectedCourse, setSelectedCourse] = useState(null);
+
+
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [toastVariant, setToastVariant] = useState('success');
@@ -37,20 +51,10 @@ const Courses = () => {
     useEffect(() => {
         dispatch(getAllCourses());
         dispatch(getAllInstructors());
-        setInstructorOptions(instructors.map(instructor => ({
-            value: instructor.instructor._id,
-            label: instructor.instructor.name,
-        })));
-        // setVehiclesOptions(vehicles.map(veh => ({
-        //     value: instructor.instructor._id,
-        //     label: instructor.instructor.name,
-        // })))
-        // setServicesOptions(services.map(ser => ({
-        //     value: instructor.instructor._id,
-        //     label: instructor.instructor.name,
-        // })))
+        dispatch(getAllVehicles());
+        dispatch(getAllServices());
 
-    }, [dispatch, isCreated, isDeleted]);
+    }, [dispatch, isCreated, isDeleted, isUpdated]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -76,6 +80,20 @@ const Courses = () => {
         });
     };
 
+    const handleServiceChange = (selectedOptions) => {
+        setFormData({
+            ...formData,
+            services: selectedOptions ? selectedOptions.map(option => option.value) : [] // Extracting IDs
+        });
+    };
+
+    const handleVehicleChange = (selectedOptions) => {
+        setFormData({
+            ...formData,
+            vehicles: selectedOptions ? selectedOptions.map(option => option.value) : [] // Extracting IDs
+        });
+    };
+
     useEffect(() => {
         if (error) {
             setToastMessage(error);
@@ -84,7 +102,7 @@ const Courses = () => {
             dispatch(clearError());
         }
         if (isCreated) {
-            setToastMessage('Instructor added successfully!');
+            setToastMessage('added successfully!');
             setToastVariant('success');
             setShowToast(true);
             dispatch(clearCreated());
@@ -92,23 +110,75 @@ const Courses = () => {
             setFormData({ name: '', email: '', phoneNumber: '' });
         }
         if (isDeleted) {
-            setToastMessage('Instructor deleted successfully!');
+            setToastMessage('deleted successfully!');
             setToastVariant('success');
             setShowToast(true);
             dispatch(clearDeleted());
         }
-    }, [error, isCreated, isDeleted, dispatch]);
+        if (isUpdated) {
+            setToastMessage('updated successfully!');
+            setToastVariant('success');
+            setShowToast(true);
+            dispatch(clearUpdated());
+            setShowModal2(false)
+        }
+    }, [error, isCreated, isUpdated, isDeleted, dispatch]);
 
     const handleClick = (id) => {
         navigate(`/owner/course/${id}`);
     };
 
+    const handleAddButton = () => {
+        setShowModal(true);
+
+    };
+
+    // Use useEffect to set instructor options when 'instructors' state changes
+    useEffect(() => {
+        if (instructors && instructors.length > 0) {
+            setInstructorOptions(
+                instructors.map(instructor => ({
+                    value: instructor.instructor._id,
+                    label: instructor.instructor.name,
+                }))
+            );
+        }
+        if (vehicles && vehicles.length > 0) {
+            setVehiclesOptions(
+                vehicles.map(vehicle => ({
+                    value: vehicle._id,
+                    label: vehicle.name,
+                }))
+            );
+        }
+        if (services && services.length > 0) {
+            setServicesOptions(
+                services.map(service => ({
+                    value: service._id,
+                    label: service.serviceName,
+                }))
+            );
+        }
+    }, [instructors, services, vehicles]);
+
+    const handleUpdate = (course) => {
+        setFormData({ ...course });
+        setSelectedCourse(course);
+        setShowModal2(true);
+    }
+
+    const handleUpdateSubmit = (e) => {
+        e.preventDefault()
+        dispatch(updateCourse({ id: selectedCourse._id, data: formData }));
+    }
+console.log(formData);
+
+
     return (
         <div className="container mt-4">
             <h1 className="my-2 text-xl font-semibold">Courses</h1>
-
             <div className="flex justify-end gap-3">
-                <Button onClick={() => setShowModal(true)} className="mb-3">Add</Button>
+                <Button onClick={handleAddButton} className="mb-3">Add</Button>
             </div>
 
             {status === 'loading' ? (
@@ -124,7 +194,7 @@ const Courses = () => {
             ) : (
                 <>
                     {courses.map((course) => (
-                        <div onClick={()=>handleClick(course._id) }
+                        <div onClick={() => handleClick(course._id)}
                             key={course._id}
                             className="hover:cursor-pointer w-full my-2 flex flex-col sm:flex-row justify-between border shadow-sm p-4 rounded-md mb-4"
                         >
@@ -138,7 +208,7 @@ const Courses = () => {
                                 />
                                 <div>
                                     <p className="text-sm font-semibold text-gray-700">{course.title}</p>
-                                    <p className="text-xs text-gray-500">{course.description}</p>
+                                    <p className="text-xs text-gray-500">{course.price}</p>
                                 </div>
                             </div>
 
@@ -153,10 +223,22 @@ const Courses = () => {
                                         <p><strong>Reviews:</strong> {course.reviews.length}</p>
                                     )}
                                 </div>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        dispatch(getAllInstructors());
+                                        dispatch(getAllVehicles());
+                                        dispatch(getAllServices());
+                                        handleUpdate(course);
+                                    }}
+                                    className="p-2 w-auto h-auto border rounded-md  hover:bg-blue-600 text-white-700 hover:text-white transition-all duration-300 ease-in-out"
+                                >
+                                    <FaEdit />
+                                </button>
 
                                 <button
-                                    onClick={() => handleDelete(course._id)}
-                                    className="p-2 w-auto h-auto border rounded-md bg-red-300 hover:bg-red-600 text-red-700 hover:text-white transition-all duration-300 ease-in-out"
+                                    onClick={(e) => { e.stopPropagation(); handleDelete(course._id); }}
+                                    className="p-2   w-auto h-auto border rounded-md  hover:bg-red-600 text-white-700 hover:text-white transition-all duration-300 ease-in-out"
                                 >
                                     <FaTrashAlt />
                                 </button>
@@ -165,6 +247,7 @@ const Courses = () => {
                     ))}
                 </>
             )}
+
 
             <Modal centered fullscreen="md-down" show={showModal} onHide={() => setShowModal(false)}>
                 <Modal.Header closeButton>
@@ -195,6 +278,17 @@ const Courses = () => {
                         </Form.Group>
 
                         <Form.Group className="mb-3">
+                            <Form.Label>Price</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="price"
+                                placeholder="Enter price"
+                                value={formData.price}
+                                onChange={handleInputChange}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
                             <Form.Label>Duration (in weeks)</Form.Label>
                             <Form.Control
                                 type="number"
@@ -207,32 +301,28 @@ const Courses = () => {
 
                         <Form.Group className="mb-3">
                             <Form.Label>Vehicles</Form.Label>
-                            {/* <Select
+                            <Select
                                 isMulti // Enables multi-select
                                 name="instructor"
-                                options={instructorOptions }
-                                value={instructorOptions.filter(option => formData.instructor.includes(option.value))} // Pre-select instructors based on IDs
-                                onChange={handleInstructorChange} // Handle change
+                                options={vehiclesOptions}
+                                value={vehiclesOptions.filter(option => formData.vehicles?.includes(option.value))} // Pre-select instructors based on IDs
+                                onChange={handleVehicleChange} // Handle change
                                 placeholder="Select instructors..."
                             />
-                            <div>
-                                Selected Instructor IDs: {formData.instructor.join(', ')}
-                            </div> */}
+
                         </Form.Group>
 
                         <Form.Group className="mb-3">
                             <Form.Label>Services</Form.Label>
-                            {/* <Select
+                            <Select
                                 isMulti // Enables multi-select
                                 name="instructor"
-                                options={instructorOptions }
-                                value={instructorOptions.filter(option => formData.instructor.includes(option.value))} // Pre-select instructors based on IDs
-                                onChange={handleInstructorChange} // Handle change
+                                options={servicesOptions}
+                                value={servicesOptions.filter(option => formData.services?.includes(option.value))} // Pre-select instructors based on IDs
+                                onChange={handleServiceChange} // Handle change
                                 placeholder="Select instructors..."
                             />
-                            <div>
-                                Selected Instructor IDs: {formData.instructor.join(', ')}
-                            </div> */}
+
                         </Form.Group>
 
                         <Form.Group className="mb-3">
@@ -240,22 +330,147 @@ const Courses = () => {
                             <Select
                                 isMulti // Enables multi-select
                                 name="instructor"
-                                options={instructorOptions }
+                                options={instructorOptions}
                                 value={instructorOptions.filter(option => formData.instructor?.includes(option.value))} // Pre-select instructors based on IDs
                                 onChange={handleInstructorChange} // Handle change
                                 placeholder="Select instructors..."
                             />
-                            <div>
-                                Selected Instructor IDs: {formData.instructor?.join(', ')}
-                            </div>
+
                         </Form.Group>
 
-                        <Button variant="primary" type="submit">
-                            Add Course
+                        <Button disabled={status === 'loading'} variant="primary" type="submit">
+                            {status === 'loading' ? <Spinner /> : 'Update'}
                         </Button>
                     </Form>
                 </Modal.Body>
             </Modal>
+
+            {/* Update model */}
+            {setSelectedCourse && <Modal centered fullscreen="md-down" show={showModal2} onHide={() => setShowModal2(false)}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Update Course</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form onSubmit={handleUpdateSubmit}>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Title</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="title"
+                                placeholder="Enter course title"
+                                value={formData.title}
+                                onChange={handleInputChange}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Description</Form.Label>
+                            <Form.Control
+                                as="textarea"
+                                name="description"
+                                placeholder="Enter course description"
+                                value={formData.description}
+                                onChange={handleInputChange}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Price</Form.Label>
+                            <Form.Control
+                                type="text"
+                                name="price"
+                                placeholder="Enter Price"
+                                value={formData.price}
+                                onChange={handleInputChange}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Duration (in weeks)</Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="duration"
+                                placeholder="Enter duration"
+                                value={formData.duration}
+                                onChange={handleInputChange}
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Vehicles</Form.Label>
+                            <Select
+                                isMulti // Enables multi-select
+                                name="vehicles"
+                                options={vehiclesOptions}
+                                value={vehiclesOptions.filter(opt =>
+                                    formData.vehicles?.some(vehicle => vehicle._id === opt.value)
+                                )}
+                                onChange={(selectedOptions) => {
+                                    const selectedValues = selectedOptions.map(opt => ({
+                                        _id: opt.value, // Assuming each option's `value` holds the `_id`
+                                        name: opt.label, // Assuming the name or label is in `label`
+                                    }));
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        vehicles: selectedValues
+                                    }));
+                                }}
+                                placeholder="Select Vehicles..."
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Services</Form.Label>
+                            <Select
+                                isMulti // Enables multi-select
+                                name="services"
+                                options={servicesOptions}
+                                value={servicesOptions.filter(opt =>
+                                    formData.services?.some(ser => ser._id === opt.value)
+                                )}
+                                onChange={(selectedOptions) => {
+                                    const selectedValues = selectedOptions.map(opt => ({
+                                        _id: opt.value,
+                                        name: opt.label
+                                    }));
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        services: selectedValues
+                                    }));
+                                }}
+                                placeholder="Select Services..."
+                            />
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
+                            <Form.Label>Instructor</Form.Label>
+                            <Select
+                                isMulti // Enables multi-select
+                                name="instructor"
+                                options={instructorOptions}
+                                value={instructorOptions.filter(opt =>
+                                    formData.instructor?.some(inst => inst._id === opt.value)
+                                )}
+                                onChange={(selectedOptions) => {
+                                    const selectedValues = selectedOptions.map(opt => ({
+                                        _id: opt.value,
+                                        name: opt.label
+                                    }));
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        instructor: selectedValues
+                                    }));
+                                }}
+                                placeholder="Select Instructors..."
+                            />
+                        </Form.Group>
+
+                        <Button disabled={status === 'loading'} variant="primary" type="submit">
+                            {status === 'loading' ? <Spinner /> : 'Update'}
+                        </Button>
+                    </Form>
+                </Modal.Body>
+            </Modal>}
 
             <ToastContainer className="p-3" position="top-end">
                 <Toast

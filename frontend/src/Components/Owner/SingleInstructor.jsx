@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Spinner from '../../utils/Spinner';
 import { Error, getSingleInstructor, singleInstructor, Status } from '../../slices/ownerSlice';
 import AttendanceCalendar from '../../utils/AttendanceCalendar ';
@@ -14,6 +14,7 @@ const SingleInstructor = () => {
   const status = useSelector(Status);
   const error = useSelector(Error);
   const instructorData = useSelector(singleInstructor);
+ const navigate = useNavigate()
 
   useEffect(() => {
     dispatch(getSingleInstructor(id));
@@ -43,15 +44,15 @@ const SingleInstructor = () => {
         <AttendancePieChart attendancePercentage={attendancePercentage} />
 
         {/* Attendance Calendar */}
-        <AttendanceCalendar id={instructorData?.instructor?._id} attendaceData={instructorData?.instructor?.attendance} fromDate={fromDate} totalAttendanceDays={totalAttendanceDays} totalPresentDays={totalPresentDays} />
+        <AttendanceCalendar isAdmin={true}  id={instructorData?.instructor?._id} attendaceData={instructorData?.instructor?.attendance} fromDate={fromDate} totalAttendanceDays={totalAttendanceDays} totalPresentDays={totalPresentDays} />
 
         <div>
           {instructorData?.instructor?.courses && instructorData?.instructor?.courses.length > 0 && <h1 className="my-2 text-xl font-semibold">Associated Courses</h1>}
           <div>
-            {
-              instructorData?.instructor?.courses && instructorData?.instructor?.courses.length > 0
-              && instructorData?.instructor.courses.map(course => {
-                <div key={course._id} className="border bg-white p-4 rounded-lg shadow-md mb-4">
+            {instructorData?.instructor?.courses &&
+              instructorData?.instructor?.courses.length > 0
+              && instructorData?.instructor.courses.map(course => ( 
+                <div onClick={()=>{navigate(`/owner/course/${course._id}`)}} key={course._id} className="hover:cursor-pointer border bg-white p-4 rounded-lg shadow-md mb-4">
                   <h4 className="text-lg font-semibold text-gray-800">{course.title}</h4>
                   <p className="text-gray-600">{course.description}</p>
                   <p className="text-gray-500">Duration: {course.duration} Weeks</p>
@@ -64,7 +65,7 @@ const SingleInstructor = () => {
                     </div>
                   )}
                 </div>
-              })
+              ))
             }
           </div>
         </div>

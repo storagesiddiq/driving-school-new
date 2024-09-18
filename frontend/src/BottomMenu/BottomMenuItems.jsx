@@ -23,7 +23,7 @@ const BottomMenuItems = ({ button, link, icon: Icon, iconActive: IconActive, tit
       style={{ textDecoration: 'none', border: 'none', background: 'none', cursor: 'pointer' }}
     >
       {isActive ? <IconActive fontSize="1.5rem" color="#F55F9E" /> : <Icon fontSize="1.5rem" />}
-      <span style={{ fontSize: '10px', color: '#4c4F53', fontFamily: 'poppins' }}>{title}</span>
+      <span style={{ fontSize: '8px', color: '#4c4F53', fontFamily: 'poppins' }}>{title}</span>
     </button>
   ) : (
     <Link

@@ -24,6 +24,7 @@ exports.getMySchool = CatchAsyncError(async (req, res, next) => {
 
     const course = await Course.find({drivingSchool:drivingSchool._id})
     const Instructors = await Instructor.find({drivingSchool:drivingSchool._id})
+    .populate('instructor','avatar email name')
 
     if (!drivingSchool) {
         return next(new errorHandler('You\'re not the owner of any Driving School', 404))
@@ -208,7 +209,8 @@ exports.createInstructor = CatchAsyncError(async (req, res, next) => {
             Best regards,
             The Driving School Team
         `;
-
+  console.log(password);
+  
             await sendEmail({
                 email: email,
                 subject: `${name}, you have been associated as an instructor for ${drivingSchool.drivingSchoolName} Driving School!`,
@@ -243,6 +245,14 @@ exports.deleteInstructor = CatchAsyncError(async (req, res, next) => {
     if (!instructor.drivingSchool.equals(drivingSchool._id)) {
         return next(new errorHandler('You cannot delete this instructor because they do not belong to your school.', 403));
     }
+
+    if(instructor.courses.length > 0){
+        return    res.status(400).json({
+            success: false,
+            message: 'You cannot delete this instructor, this instructor is assosiated with some courses ',
+        })
+    }
+
     // Delete the instructor
     await instructor.deleteOne();
     await User.findByIdAndDelete(instructor.instructor)
@@ -299,7 +309,7 @@ exports.getInstructorById = CatchAsyncError(async (req, res, next) => {
 
     const instructor = await Instructor.findOne({ _id: req.params.id, drivingSchool: drivingSchool._id })
         .populate('instructor', 'avatar name email ')
-        .populate('courses');
+        .populate('courses','title duration description ratings' );
 
     if (!instructor) {
         return next(new errorHandler('Instructor not found or does not belong to your Driving School', 404));

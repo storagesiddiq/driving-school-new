@@ -14,6 +14,11 @@ import { loginAuthUser, loginIsAuthenticated } from '../slices/authSlice';
 import { RiSchoolLine, RiSchoolFill  } from "react-icons/ri";
 import { CiImageOn } from "react-icons/ci";
 import { FaImage } from "react-icons/fa6";
+import { RiGraduationCapFill } from "react-icons/ri";
+import { LuGraduationCap } from "react-icons/lu";
+import { MdOutlineMiscellaneousServices } from "react-icons/md";
+import { MdOutlineDirectionsCar } from "react-icons/md";
+import { FaCar } from "react-icons/fa";
 
 const BottomMenu = () => {
     const LoginIsAuthenticated = useSelector(loginIsAuthenticated);
@@ -42,8 +47,24 @@ const BottomMenu = () => {
 
                             { (user?.role === "owner") &&
                             <div className='w-full flex justify-between' style={{ overflow: 'auto', scrollbarWidth: 'none' }}>
-                                <BottomMenuItems isAdmin={true} link={'/owner/dashboard'} icon={RiSchoolLine} iconActive={RiSchoolFill} title="MY SCHOOL" />
+                                <BottomMenuItems isAdmin={true} link={'/owner/dashboard'} icon={RiSchoolLine} iconActive={RiSchoolFill} title="SCHOOL" />
+                                <BottomMenuItems isAdmin={true} link={'/owner/registered-users'} icon={FaRegUserCircle} iconActive={FaUserCircle} title="REGISTERED" />
+                                <BottomMenuItems isAdmin={true} link={'/owner/instructors'} icon={FaRegUserCircle} iconActive={FaUserCircle} title="INSTRUCTORS" />
+                                <BottomMenuItems isAdmin={true} link={'/owner/courses'} icon={LuGraduationCap} iconActive={RiGraduationCapFill} title="COURSES" />
+                                <BottomMenuItems isAdmin={true} link={'/owner/services'} icon={MdOutlineMiscellaneousServices} iconActive={MdOutlineMiscellaneousServices} title="SERVICES" />
+                                <BottomMenuItems isAdmin={true} link={'/owner/vehicles'} icon={MdOutlineDirectionsCar} iconActive={FaCar} title="VEHICLES" />
+                                <BottomMenuItems isAdmin={true} link={'/owner/profile'} icon={FaRegUserCircle} iconActive={FaUserCircle} title="PROFILE" />
+
                                 <BottomMenuItems isAdmin={true} button={true} icon={IoIosLogOut} iconActive={IoLogOut} title="LOGOUT" />
+
+                            </div>}
+
+                            { (user?.role === "instructor") &&
+                            <div className='w-full flex justify-between' style={{ overflow: 'auto', scrollbarWidth: 'none' }}>
+                                <BottomMenuItems isAdmin={true} link={'/instructor/home'} icon={RiSchoolLine} iconActive={RiSchoolFill} title="SCHOOL" />
+            
+                                <BottomMenuItems isAdmin={true} button={true} icon={IoIosLogOut} iconActive={IoLogOut} title="LOGOUT" />
+
                             </div>}
                         </ul>
                     </div>

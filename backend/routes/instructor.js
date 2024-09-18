@@ -11,7 +11,7 @@ router.get('/registered-users', isAuthenticatedUser, authorizeRoles('instructor'
 
 //Managing Session by instructor
 router.post('/session/:courseId', isAuthenticatedUser, authorizeRoles('instructor'), Instructor.createSession)
-router.get('/sessions/:courseId', isAuthenticatedUser, authorizeRoles('instructor'), Instructor.getAllSessions);       
+router.get('/sessions', isAuthenticatedUser, authorizeRoles('instructor'), Instructor.getAllSessions);       
 router.get('/session/:sessionId', isAuthenticatedUser, authorizeRoles('instructor'), Instructor.getSession);            
 router.put('/session/:sessionId', isAuthenticatedUser, authorizeRoles('instructor'), Instructor.updateSession);         
 router.delete('/session/:sessionId', isAuthenticatedUser, authorizeRoles('instructor'), Instructor.deleteSession); 

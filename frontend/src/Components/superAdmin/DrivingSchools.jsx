@@ -101,11 +101,13 @@ const DrivingSchools = () => {
   useEffect(() => {
     if(isCreated){
       handleClose()
-      setFormValues.name('')
-      setFormValues.email('')
-      setFormValues.phoneNumber('')
-      setFormValues.drivingSchoolName('')
-      setFormValues.location('')
+      setFormValues({
+        name: '',
+        email: '',
+        phoneNumber: '',
+        drivingSchoolName: '',
+        location: ''
+      });
     }
     if (isCreated) {
       setShowToast(true);

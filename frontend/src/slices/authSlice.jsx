@@ -176,6 +176,39 @@ export const updateAvatar = createAsyncThunk('auth/updateAvatar',
     }
 );
 
+//AllUsers:
+export const allUsersByInstructor = createAsyncThunk('auth/allUsersByInstructor',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await API.get('/users-by-instructor');
+            console.log(response.data)
+            return response.data;
+        } catch (error) {
+            console.error('Error loading user:', error.response?.data?.message || 'Unknown error');
+            return rejectWithValue(error.response?.data?.message);
+        }
+    }
+);
+
+//AllInstructors by Learner:
+export const fetchMatchedUsers = createAsyncThunk('auth/fetchMatchedUsers',
+    async ({keyword}, { rejectWithValue }) => {
+        try {
+            let link = '/matched-users';
+
+            if (keyword !== null && keyword !== undefined && keyword !== '') {
+                link += `?keyword=${keyword}`
+            }
+    
+            const response = await API.get(link);
+            console.log(response.data) 
+            return response.data;
+        } catch (error) {
+            console.error('Error loading user:', error.response?.data?.message || 'Unknown error');
+            return rejectWithValue(error.response?.data?.message);
+        }
+    }
+);
 
 const authSlice = createSlice({
     name: 'auth',
@@ -227,6 +260,21 @@ const authSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
+
+          //allLEarnersBy instructor
+          .addCase(fetchMatchedUsers.pending, (state) => {
+            state.status = 'loading';
+            state.error = null;
+        })
+        .addCase(fetchMatchedUsers.fulfilled, (state, action) => {
+            state.status = 'succeeded';
+            state.error = null;
+            state.matchedUsers = action.payload.users;
+        })
+        .addCase(fetchMatchedUsers.rejected, (state, action) => {
+            state.status = 'failed';
+            state.error = action.payload || 'Authentication failed';
+        })
 
             //update avatar PATCH
             .addCase(updateAvatar.pending, (state) => {
@@ -429,8 +477,8 @@ export const loginAuthUser = (state) => state.auth.user;
 
 export const isUpdated = (state) => state.auth.isUpdated;
 export const getAllUsers = (state) => state.auth.allUsers;
-export const getMatchedUsers = (state) => state.auth.matchedUsers;
 export const GetSingleUser = (state) => state.auth.singleUser;
+export const getMatchedUsers = (state) => state.auth.matchedUsers;
 
 
 //Admin

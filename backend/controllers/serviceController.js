@@ -2,12 +2,20 @@ const catchAsyncError = require('../middlewares/catchAsyncError');
 const Service = require('../models/serviceModel'); // Adjust path as necessary
 const errorHandler = require('../utils/errorHandler');
 const {Course} = require('../models/courseModel')
+const DrivingSchool = require('../models/drivingSchoolModel')
 
 // Create a new service
 exports.createService = catchAsyncError(async (req, res, next) => {
     const { serviceName, serviceType, vehicleType, description, price, certificatesIssued } = req.body;
 
+    const drivingSchool = await DrivingSchool.findOne({ owner: req.user.id });
+
+    if (!drivingSchool) {
+        return next(new errorHandler('Driving School not found or you are not the owner', 404));
+    }
+
     const service = await Service.create({
+        drivingSchool:drivingSchool._id,
         serviceName,
         serviceType,
         vehicleType,
@@ -25,7 +33,12 @@ exports.createService = catchAsyncError(async (req, res, next) => {
 
 // Get all services
 exports.getAllServices = catchAsyncError(async (req, res, next) => {
-    const services = await Service.find();
+    const drivingSchool = await DrivingSchool.findOne({ owner: req.user.id });
+
+    if (!drivingSchool) {
+        return next(new errorHandler('Driving School not found or you are not the owner', 404));
+    }
+    const services = await Service.find({drivingSchool:drivingSchool._id});
 
     res.status(200).json({
         success: true,
@@ -89,8 +102,11 @@ exports.deleteService = catchAsyncError(async (req, res, next) => {
 
     if (associatedCourses.length > 0) {
         const courseTitles = associatedCourses.map(course => course.title).join(', ');
-        return next(new errorHandler(`This service cannot be deleted because it is associated with the following courses: ${courseTitles}`, 400));
-    }
+        return res.status(400).json({
+            success: true,
+            message: `This service cannot be deleted because it is associated with the following courses: ${courseTitles}`,
+        }); 
+            }
     await service.deleteOne();
 
     res.status(200).json({

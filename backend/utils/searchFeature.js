@@ -38,6 +38,16 @@ class searchFeatures {
         return this;
     }
 
+    userSearch(){
+        if (this.queryStr.keyword) {
+            const keywordFilter = {
+                name: { $regex: this.queryStr.keyword, $options: 'i' }
+            };
+            this.query = this.query.find(keywordFilter); // Apply the search filter
+        }
+        return this;
+    }
+
         // Search
         courseSearch() {
             if (this.queryStr.keyword) {

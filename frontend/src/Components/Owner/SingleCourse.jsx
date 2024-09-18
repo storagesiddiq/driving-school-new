@@ -21,12 +21,12 @@ const SingleCourse = () => {
     console.log(course);
 
     return (
-        <div className="max-w-5xl mx-auto p-4">
+        <div className="h-screen max-w-5xl mx-auto p-4">
             {/* Course Info */}
-            <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-                <div className='flex flex-col md:flex-row justify-between'>
+            <div className=" bg-white shadow-md rounded-lg p-6 mb-6">
+                <div className='w-full flex flex-col md:flex-row justify-between'>
                     {/* Course Info */}
-                    <div className="md:w-2/3">
+                    <div className="w-1/2">
                         <div className="flex items-center space-x-4 mb-4">
                             <img src={course?.drivingSchool?.avatar} alt="School Logo" className="w-16 h-16 rounded-full" />
                             <div>
@@ -36,17 +36,19 @@ const SingleCourse = () => {
                         </div>
                         <p className="text-gray-700 mb-4">{course?.description}</p>
                         <p><strong>Duration:</strong> {course?.duration} hour(s)</p>
-                        <p><strong>Ratings:</strong> {course?.ratings}</p>
+                      { course?.ratings > 0 && <p><strong>Ratings:</strong> {course?.ratings}</p>}
                     </div>
 
                     {/* Instructor Info */}
-                    <div className="md:w-1/3 flex flex-col items-center mt-6 md:mt-0">
+                    <div className="w-1/2  flex flex-col items-center mt-6 md:mt-0">
+                   <h1 className='text-2xl'>  Instructor </h1>
                         {course?.instructor && course?.instructor.length > 0 &&
                             course?.instructor.map((instructor, index) => (
-                                <div key={index} className="text-center mb-4">
-                                    <img src={instructor?.avatar} alt="Instructor Avatar" className="w-24 h-24 rounded-full mx-auto" />
-                                    <h2 className="text-xl font-bold mt-2">{instructor?.name}</h2>
-                                    <p className="text-gray-600">{instructor?.email}</p>
+                                <div key={index} className="my-2 border rounded-md p-2 flex gap-3 items-center mb-4">
+                                    <img src={instructor?.avatar} alt="Instructor Avatar" className="w-10 h-10 rounded-full mx-auto" />
+                                   <div> <h2 className="text-l font-bold ">{instructor?.name}</h2>
+                                    <p className="text-xs text-gray-600">{instructor?.email}</p>
+                                    </div>
                                 </div>
                             ))
                         }
@@ -80,8 +82,6 @@ const SingleCourse = () => {
                                 <p>Registration Number: {vehicle.registrationNumber}</p>
                                 <p>Last Service: {new Date(vehicle.lastServiceDate).toLocaleDateString()}</p>
                                 <p>Next Service: {new Date(vehicle.nextServiceDate).toLocaleDateString()}</p>
-                                <p>Used in Courses: {vehicle.usedInCourses}</p>
-                                <p>Availability: {vehicle.availability}</p>
                                 <p>Certificates: {vehicle.certificates.map(c => c.name).join(', ')}</p>
                             </li>
                         ))}

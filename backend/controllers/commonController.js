@@ -212,7 +212,7 @@ exports.getSingleCourse = CatchAsyncError(async (req, res, next) => {
     const { id } = req.params;
 
     // Find the course by ID and populate nested fields
-    const course = await Course.findById(id).populate([
+    let course = await Course.findById(id).populate([
         {
             path: 'instructor',
             select: 'name avatar email',
@@ -224,24 +224,41 @@ exports.getSingleCourse = CatchAsyncError(async (req, res, next) => {
                 path: 'owner',
                 select: 'avatar name email',
             }
+        },
+        {
+            path: 'reviews',
+            select: 'user rating comment',
+            populate: {
+                path: 'user',
+                select: 'avatar name email',
+            }
+        },
+        {path:'learners',
+            select: 'learner',
+            populate: {
+                path: 'learner',
+                select: 'avatar name email',
+            }
         }
     ]);
 
-    if(course.vehicles && course.vehicles.length > 0){
-        course.populate('vehicles', 'name registrationNumber type lastServiceDate nextServiceDate certificates')
-    }
-    if(course.services && course.services.length > 0){
-        course.populate('services', 'serviceName serviceType vehicleType description price certificatesIssued')
-    }
-
     // If no course is found, return an error
     if (!course) {
-        return next(new ErrorHandler('Course not found', 404));
+        return next(new errorHandler('Course not found', 404));
+    }
+
+    // Populate vehicles and services only if they exist
+    if (course.vehicles && course.vehicles.length > 0) {
+        course = await course.populate('vehicles', 'name registrationNumber type lastServiceDate nextServiceDate certificates');
+    }
+
+    if (course.services && course.services.length > 0) {
+        course = await course.populate('services', 'serviceName serviceType vehicleType description price certificatesIssued');
     }
 
     res.status(200).json({
         success: true,
-        course
+        course,
     });
 });
 

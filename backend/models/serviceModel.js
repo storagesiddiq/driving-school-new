@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const serviceSchema = new mongoose.Schema({
+    drivingSchool:{
+        type: mongoose.Schema.ObjectId,
+        ref: 'drivingSchool',
+        required: true,
+    },
     serviceName: {
         type: String,
         required: [true, 'Please enter the service name'],
