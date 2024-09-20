@@ -17,14 +17,9 @@ exports.getMySchool = CatchAsyncError(async (req, res, next) => {
     const drivingSchool = await DrivingSchool.findOne({ owner: req.user.id })
         .populate('owner', 'avatar name email phoneNumber')
 
-
-    if (drivingSchool.instructor && drivingSchool.instructor.length > 0) {
-        await drivingSchool.populate('instructors', 'avatar name email phoneNumber')
-    }
-
-    const course = await Course.find({drivingSchool:drivingSchool._id})
-    const Instructors = await Instructor.find({drivingSchool:drivingSchool._id})
-    .populate('instructor','avatar email name')
+    const course = await Course.find({ drivingSchool: drivingSchool._id })
+    const Instructors = await Instructor.find({ drivingSchool: drivingSchool._id })
+        .populate('instructor', 'avatar email name')
 
     if (!drivingSchool) {
         return next(new errorHandler('You\'re not the owner of any Driving School', 404))
@@ -209,8 +204,8 @@ exports.createInstructor = CatchAsyncError(async (req, res, next) => {
             Best regards,
             The Driving School Team
         `;
-  console.log(password);
-  
+            console.log(password);
+
             await sendEmail({
                 email: email,
                 subject: `${name}, you have been associated as an instructor for ${drivingSchool.drivingSchoolName} Driving School!`,
@@ -246,8 +241,8 @@ exports.deleteInstructor = CatchAsyncError(async (req, res, next) => {
         return next(new errorHandler('You cannot delete this instructor because they do not belong to your school.', 403));
     }
 
-    if(instructor.courses.length > 0){
-        return    res.status(400).json({
+    if (instructor.courses.length > 0) {
+        return res.status(400).json({
             success: false,
             message: 'You cannot delete this instructor, this instructor is assosiated with some courses ',
         })
@@ -309,7 +304,7 @@ exports.getInstructorById = CatchAsyncError(async (req, res, next) => {
 
     const instructor = await Instructor.findOne({ _id: req.params.id, drivingSchool: drivingSchool._id })
         .populate('instructor', 'avatar name email ')
-        .populate('courses','title duration description ratings' );
+        .populate('courses', 'title duration description ratings');
 
     if (!instructor) {
         return next(new errorHandler('Instructor not found or does not belong to your Driving School', 404));
@@ -405,7 +400,7 @@ exports.getRegisteredLearnerById = CatchAsyncError(async (req, res, next) => {
 
     const RegisteredLearner = await registerLearner.findOne({ _id: id, drivingSchool: drivingSchool._id })
         .populate(
-            'learner','name email avatar phoneNumber')
+            'learner', 'name email avatar phoneNumber')
         .populate({
             path: 'course',
             populate: [
@@ -428,7 +423,7 @@ exports.getRegisteredLearnerById = CatchAsyncError(async (req, res, next) => {
     res.status(200).json({
         success: true,
         RegisteredLearner,
-        details: learnerDetails 
+        details: learnerDetails
     });
 });
 
@@ -441,7 +436,9 @@ exports.updateRegisteredLearnerStatus = CatchAsyncError(async (req, res, next) =
 
     if (!drivingSchool) {
         return next(new errorHandler('Driving School not found or you are not the owner', 404));
-    }    
+    }
+
+    console.log(status);
     
     // Validate the status
     const validStatuses = ['Pending', 'Approved', 'Rejected'];
@@ -456,34 +453,29 @@ exports.updateRegisteredLearnerStatus = CatchAsyncError(async (req, res, next) =
     }
 
     const course = await Course.findById(registeredLearner.course)
-    
+
     if (!course) {
         return next(new errorHandler('Course not found', 404));
     }
-  
-        // Update course learners based on status
-        const isLearnerInCourse = course.learners.some(learner => learner.equals(registeredLearner._id));
-        console.log(isLearnerInCourse);
- console.log(registeredLearner._id);
 
-   if (status === 'Approved') {
-       if (isLearnerInCourse) {
-           return next(new errorHandler('Learner is already approved for this course', 400));
-       }
-       course.learners.push({
-        _id:registeredLearner._id,
-        learner: registeredLearner.learner,
-        course: registeredLearner.course,
-        drivingSchool: registeredLearner.drivingSchool,
-        status: status
-       })       
-   } else if (status === 'Rejected') {
-       if (!isLearnerInCourse) {
-           return next(new errorHandler('Learner is not enrolled in this course', 400));
-       }
-       course.learners.pull(registeredLearner._id);
-   }
-          // Save the updated course document
+    // Update course learners based on status
+    const isLearnerInCourse = course.learners.some(learner => learner.equals(registeredLearner._id));
+    console.log(isLearnerInCourse);
+    console.log(registeredLearner._id);
+
+    if (status === 'Approved') {
+        if (isLearnerInCourse) {
+            return next(new errorHandler('Learner is already approved for this course', 400));
+        }
+        course.learners.push({
+            _id: registeredLearner._id,
+            learner: registeredLearner.learner,
+            course: registeredLearner.course,
+            drivingSchool: registeredLearner.drivingSchool,
+            status: status
+        })
+    } 
+    // Save the updated course document
     await course.save();
     registeredLearner.status = status;
     await registeredLearner.save();

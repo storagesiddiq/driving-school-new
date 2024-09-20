@@ -9,6 +9,7 @@ import commonSlice from './slices/commonSlice'
 import chatSlice from './slices/chatSlice'
 import messageSlice from './slices/messageSlice'
 import selectedChatSlice from './slices/selectedChatSlice'
+import learnerSlice from './slices/learnerSlice'
 
 export default configureStore({
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({
@@ -18,14 +19,15 @@ export default configureStore({
 
     reducer: {
         auth: authReducer,
-        admin:adminReducer,
+        admin: adminReducer,
         owner: ownerReducer,
         instructor: instructorSlice,
         service: serviceSlice,
         vehicle: vehicleSlice,
         common: commonSlice,
-        chat:chatSlice,
-    message:messageSlice ,
-    selectedChat:selectedChatSlice
-   }
+        chat: chatSlice,
+        message: messageSlice,
+        selectedChat: selectedChatSlice,
+        learner:learnerSlice
+    }
 })

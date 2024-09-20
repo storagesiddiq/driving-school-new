@@ -4,6 +4,7 @@ import { clearError, clearPatched, clearUpdated, Error, getMySchool, IsPatched, 
 import { Star, Edit } from 'react-feather'; // Ensure you have the `react-feather` package installed for icons
 import SkeletonLoader from '../../Skeletons/SkeletonLoader';
 import { Modal, Button, Form, Toast } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
 const OwnerDashboard = () => {
     const dispatch = useDispatch();
@@ -12,7 +13,7 @@ const OwnerDashboard = () => {
     const error = useSelector(Error);
     const isPatched = useSelector(IsPatched)
     const isUpdated = useSelector(IsUpdated)
-
+    const navigate = useNavigate()
     const [activeTab, setActiveTab] = useState('courses');
     const [showModal, setShowModal] = useState(false);
     const [formData, setFormData] = useState({
@@ -100,9 +101,9 @@ const OwnerDashboard = () => {
 
     const renderCourses = () => (
         <div>
-            {school?.courses?.length ? (
-                school.courses.map((course) => (
-                    <div key={course._id} className="border bg-white p-4 rounded-lg shadow-md mb-4">
+            {school?.course?.length ? (
+                school.course.map((course) => (
+                    <div onClick={()=>navigate(`/owner/course/${course._id}`)} key={course._id} className="border bg-white p-4 rounded-lg shadow-md mb-4">
                         <h4 className="text-lg font-semibold text-gray-800">{course.title}</h4>
                         <p className="text-gray-600">{course.description}</p>
                         <p className="text-gray-500">Duration: {course.duration} Weeks</p>
@@ -145,33 +146,6 @@ const OwnerDashboard = () => {
             )}
         </div>
     );
-
-    const renderLearners = () => (
-        <div>
-            {school?.learners?.length ? (
-                school.learners.map((learner) => (
-                    <div key={learner._id} className="border shadow-sm p-4 rounded-md flex items-center gap-4 mb-4">
-                        <img
-                            src={learner?.learner?.avatar}
-                            width="50"
-                            height="50"
-                            className="rounded-full border border-gray-300"
-                            alt="Learner Avatar"
-                        />
-                        <div>
-                            <p className="text-sm font-semibold text-gray-700">{learner?.learner?.name}</p>
-                            <p className="text-xs text-gray-500">{learner?.learner?.email}</p>
-                        </div>
-                    </div>
-                ))
-            ) : (
-                <p className="text-center py-4">No learners available.</p>
-            )}
-        </div>
-    );
-
-    console.log(school);
-    
 
     return (
         <>
@@ -283,19 +257,12 @@ const OwnerDashboard = () => {
                         >
                             Instructors
                         </button>
-                        <button
-                            className={`w-1/3 py-2 px-4 rounded-lg text-xs font-semibold ${activeTab === 'learners' ? 'bg-primary-dark text-white' : 'bg-gray-200 text-gray-700'} hover:text-white hover:bg-primary-light`}
-                            onClick={() => setActiveTab('learners')}
-                        >
-                            Learners
-                        </button>
                     </div>
                 </div>
 
                 <div className="bg-white p-6 rounded-lg shadow-md">
                     {activeTab === 'courses' && renderCourses()}
                     {activeTab === 'instructors' && renderInstructors()}
-                    {activeTab === 'learners' && renderLearners()}
                 </div>
 
                 {/* Modal for updating driving school name and location */}

@@ -46,16 +46,22 @@ exports.getAllDrivingSchools = CatchAsyncError(async (req, res, next) => {
 // get single drivingSchool/admin = api/admin/driving-school/:id
 exports.getDrivingSchoolById = CatchAsyncError(async (req, res, next) => {
     const drivingSchool = await DrivingSchool.findById(req.params.id)
-        .populate('owner', 'avatar name email phoneNumber')
-       
+        .populate('owner', 'avatar name email phoneNumber');
 
     if (!drivingSchool) {
         return next(new errorHandler('Driving School not found', 404));
     }
 
+    // Fetch related courses and instructors
+    const course = await Course.find({ drivingSchool: drivingSchool._id });
+    const Instructors = await Instructor.find({ drivingSchool: drivingSchool._id })
+        .populate('instructor', 'avatar email name');
+
     res.status(200).json({
         success: true,
-        drivingSchool
+        drivingSchool,
+        course,
+        Instructors
     });
 });
 
@@ -261,4 +267,3 @@ exports.getSingleCourse = CatchAsyncError(async (req, res, next) => {
         course,
     });
 });
-

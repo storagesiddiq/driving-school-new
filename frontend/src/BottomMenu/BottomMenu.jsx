@@ -8,8 +8,6 @@ import { FaRegUserCircle } from "react-icons/fa";
 import { FaUserCircle } from "react-icons/fa";
 import { MdOutlineDashboard } from "react-icons/md";
 import { MdDashboard } from "react-icons/md";
-import { IoIosLogOut } from "react-icons/io";
-import { IoLogOut } from "react-icons/io5";
 import { loginAuthUser, loginIsAuthenticated } from '../slices/authSlice';
 import { RiSchoolLine, RiSchoolFill  } from "react-icons/ri";
 import { CiImageOn } from "react-icons/ci";
@@ -19,6 +17,10 @@ import { LuGraduationCap } from "react-icons/lu";
 import { MdOutlineMiscellaneousServices } from "react-icons/md";
 import { MdOutlineDirectionsCar } from "react-icons/md";
 import { FaCar } from "react-icons/fa";
+import { IoChatbubbleEllipsesOutline, IoChatbubbleEllipses  } from "react-icons/io5";
+import { PiChalkboardTeacherLight , PiChalkboardTeacherFill } from "react-icons/pi";
+import { FaRegCalendarAlt } from "react-icons/fa";
+import { TbReportAnalytics } from "react-icons/tb";
 
 const BottomMenu = () => {
     const LoginIsAuthenticated = useSelector(loginIsAuthenticated);
@@ -42,7 +44,6 @@ const BottomMenu = () => {
                                 <BottomMenuItems isAdmin={true} link={'/admin/dashboard'} icon={MdOutlineDashboard} iconActive={MdDashboard} title="DASHBOARD" />
                                 <BottomMenuItems isAdmin={true} link={'/admin/schools'} icon={RiSchoolLine} iconActive={RiSchoolFill} title="SCHOOLS" />
                                 <BottomMenuItems isAdmin={true} link={'/admin/default-images'} icon={CiImageOn} iconActive={FaImage} title="IMAGES" />
-                                <BottomMenuItems isAdmin={true} button={true} icon={IoIosLogOut} iconActive={IoLogOut} title="LOGOUT" />
                             </div>}
 
                             { (user?.role === "owner") &&
@@ -55,15 +56,18 @@ const BottomMenu = () => {
                                 <BottomMenuItems isAdmin={true} link={'/owner/vehicles'} icon={MdOutlineDirectionsCar} iconActive={FaCar} title="VEHICLES" />
                                 <BottomMenuItems isAdmin={true} link={'/owner/profile'} icon={FaRegUserCircle} iconActive={FaUserCircle} title="PROFILE" />
 
-                                <BottomMenuItems isAdmin={true} button={true} icon={IoIosLogOut} iconActive={IoLogOut} title="LOGOUT" />
-
                             </div>}
 
                             { (user?.role === "instructor") &&
                             <div className='w-full flex justify-between' style={{ overflow: 'auto', scrollbarWidth: 'none' }}>
-                                <BottomMenuItems isAdmin={true} link={'/instructor/home'} icon={RiSchoolLine} iconActive={RiSchoolFill} title="SCHOOL" />
-            
-                                <BottomMenuItems isAdmin={true} button={true} icon={IoIosLogOut} iconActive={IoLogOut} title="LOGOUT" />
+                                <BottomMenuItems isAdmin={true} link={'/instructor/home'} icon={GoHome} iconActive={GoHomeFill} title="HOME" />
+                                <BottomMenuItems isAdmin={true} link={'/chat-page'} icon={IoChatbubbleEllipsesOutline} iconActive={IoChatbubbleEllipses} title="REPORT" />
+                                <BottomMenuItems isAdmin={true} link={'/instructor/sessions'} icon={PiChalkboardTeacherLight} iconActive={PiChalkboardTeacherFill } title="SESSION" />
+                                <BottomMenuItems isAdmin={true} link={'/instructor/attendance'} icon={FaRegCalendarAlt} iconActive={FaRegCalendarAlt} title="ATTENDANCE" />
+                                <BottomMenuItems isAdmin={true} link={'/instructor/report'} icon={TbReportAnalytics} iconActive={TbReportAnalytics} title="REPORT" />
+                        
+                                <BottomMenuItems isAdmin={true} link={'/instructor/profile'} icon={FaRegUserCircle} iconActive={FaUserCircle} title="PROFILE" />
+
 
                             </div>}
                         </ul>

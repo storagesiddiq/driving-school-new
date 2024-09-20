@@ -2,7 +2,7 @@ const mongoose=require('mongoose')
 const Schema = mongoose.Schema
 
 const reviewSchema = new Schema({
-    Course:{
+    course:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course'
     },

@@ -6,7 +6,7 @@ import API from "../../API";
 export const applyCourse = createAsyncThunk('learner/applyCourse',
     async ({courseId}, { rejectWithValue }) => {
         try {
-            const response = await API.get(`/apply-course/${courseId}`);
+            const response = await API.post(`/apply-course/${courseId}`);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Message not Fetching');
@@ -16,9 +16,12 @@ export const applyCourse = createAsyncThunk('learner/applyCourse',
 
 // Give Rating Course
 export const giveRatingCourse = createAsyncThunk('learner/giveRatingCourse',
-    async ({courseId}, { rejectWithValue }) => {
+    async ({courseId, rating, comment}, { rejectWithValue }) => {
         try {
-            const response = await API.get(`/review/${courseId}`);
+            const response = await API.put(`/review/${courseId}`,{
+                rating,
+                comment
+            });
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data?.message || 'Unknown Error');
@@ -50,6 +53,17 @@ export const getMySession = createAsyncThunk('learner/getMySession',
     }
 );
 
+// Get My Session
+export const getMyAttendance = createAsyncThunk('learner/getMyAttendance',
+    async ({id}, { rejectWithValue }) => {
+        try {
+            const response = await API.get(`/my-session-attendance/${id}`);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data?.message || 'Unknown Error');
+        }
+    }
+);
 
 const learnerSlice = createSlice({
     name: 'learner',
@@ -58,6 +72,7 @@ const learnerSlice = createSlice({
         error: null,
         courses:[],
         sessions:[],
+        attendances:[],
         isCreated:false,
         isUpdate:false,
     },
@@ -77,18 +92,29 @@ const learnerSlice = createSlice({
         clearUpdated(state, action) {
             return {
                 ...state,
-                isCreated: false
-            }
-        },
-        clearCreated(state, action) {
-            return {
-                ...state,
                 isUpdate: false
             }
-        }
+        },
+
     },
     extraReducers: (builder) => {
         builder
+               // getMy Attendances
+               .addCase(getMyAttendance.pending, (state) => {
+                state.allMesStatus = 'loading';
+                state.error = null;
+            })
+            .addCase(getMyAttendance.fulfilled, (state, action) => {
+                state.allMesStatus = 'succeeded';
+                state.error = null;
+                state.attendances =  action.payload.sessions
+            })
+            .addCase(getMyAttendance.rejected, (state, action) => {
+                state.allMesStatus = 'failed';
+                state.error = action.payload;
+            })
+
+            
          // getMy Sessions
          .addCase(getMySession.pending, (state) => {
             state.allMesStatus = 'loading';
@@ -112,7 +138,7 @@ const learnerSlice = createSlice({
             .addCase(getMyCourses.fulfilled, (state, action) => {
                 state.allMesStatus = 'succeeded';
                 state.error = null;
-                state.courses =  action.payload.courses
+                state.courses =  action.payload
             })
             .addCase(getMyCourses.rejected, (state, action) => {
                 state.allMesStatus = 'failed';

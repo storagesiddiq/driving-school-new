@@ -19,7 +19,7 @@ router.delete('/session/:sessionId', isAuthenticatedUser, authorizeRoles('instru
 
 //patch Attendance
 router.patch('/attendance/status/:id',isAuthenticatedUser, authorizeRoles('instructor'), Instructor.updateAttendance)
-router.get('/attendance/:sessionId',isAuthenticatedUser, authorizeRoles('instructor'), Instructor.getAttendances)
+router.get('/attendance/:sessionId',isAuthenticatedUser, authorizeRoles('instructor', 'learner'), Instructor.getAttendances)
 
 //create and sendMail report to leanrner
 router.post('/report/:sessionId',isAuthenticatedUser, authorizeRoles('instructor'), Instructor.createReport)

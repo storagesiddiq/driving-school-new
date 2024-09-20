@@ -221,7 +221,7 @@ const ChatBox = () => {
                                 onChange={onChangeHandler}
                                 type="text"
                                 placeholder='Message'
-                                className='md:shadow-down border border-gray-300 px-4 py-4 w-full rounded-full outline-none focus:ring-0'
+                                className='md:shadow-down border border-gray-300 px-4 py-3 w-full rounded-full outline-none focus:ring-0'
                             />
                         </form>
                     </div>

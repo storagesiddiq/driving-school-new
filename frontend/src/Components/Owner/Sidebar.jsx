@@ -1,8 +1,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
-import { clearStatus, logoutUser } from '../../slices/authSlice';
-import { IoLogOut } from "react-icons/io5";
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { clearStatus } from '../../slices/authSlice';
 import { LuSchool } from "react-icons/lu";
 import { FaRegUserCircle } from "react-icons/fa";
 import { MdOutlineMiscellaneousServices } from "react-icons/md";
@@ -10,61 +9,56 @@ import { RiGraduationCapFill } from "react-icons/ri";
 import { FaCar } from "react-icons/fa";
 
 const Sidebar = () => {
-    const navigate = useNavigate()
-    const dispatch = useDispatch()
+    const location = useLocation();
+    const isDash = location.pathname === '/owner/dashboard'
+    const isRegUsers = location.pathname === '/owner/registered-users'
+    const isInst = location.pathname === '/owner/instructors'
+    const isCourse = location.pathname === '/owner/courses'
+    const isServ = location.pathname === '/owner/services'
+    const isVeh = location.pathname === '/owner/vehicles'
+    const isProfile = location.pathname === '/owner/profile'
 
-    const handleLogout = () => {
-        dispatch(logoutUser());
-        dispatch(clearStatus());
-        navigate('/')
-    };
 
     return (
         <div style={{height:'100vh'}} className=" bg-gray-800 text-white w-full lg:w-full h-full">
             <nav>
                 <ul className="space-y-2 pt-20">
                     <li>
-                        <Link to="/owner/dashboard" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                        <Link to="/owner/dashboard" className={`${isDash && 'bg-gray-700'} flex items-center p-2 hover:bg-gray-700 rounded`}>
                              <LuSchool  className="mr-2"/> My School
                         </Link>
                     </li>
                     <li>
-                        <Link to="/owner/registered-users" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                        <Link to="/owner/registered-users" className={`${isRegUsers && 'bg-gray-700'} flex items-center p-2 hover:bg-gray-700 rounded`}>
                              <FaRegUserCircle  className="mr-2"/> Registered Users
                         </Link>
                     </li>
                  
                     <li>
-                        <Link to="/owner/instructors" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                        <Link to="/owner/instructors" className={`${isInst && 'bg-gray-700'} flex items-center p-2 hover:bg-gray-700 rounded`}>
                              <FaRegUserCircle  className="mr-2"/> Instructors
                         </Link>
                     </li>
                     <li>
-                        <Link to="/owner/courses" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                        <Link to="/owner/courses" className={`${isCourse && 'bg-gray-700'} flex items-center p-2 hover:bg-gray-700 rounded`}>
                              <RiGraduationCapFill  className="mr-2"/> Courses
                         </Link>
                     </li>
                     <li>
-                        <Link to="/owner/services" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                        <Link to="/owner/services" className={`${isServ && 'bg-gray-700'} flex items-center p-2 hover:bg-gray-700 rounded`}>
                              <MdOutlineMiscellaneousServices  className="mr-2"/> Services
                         </Link>
                     </li>
                     <li>
-                        <Link to="/owner/vehicles" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                        <Link to="/owner/vehicles" className={`${isVeh && 'bg-gray-700'} flex items-center p-2 hover:bg-gray-700 rounded`}>
                              <FaCar  className="mr-2"/> Vehicles
                         </Link>
                     </li>
                     <li>
-                        <Link to="/owner/profile" className="flex items-center p-2 hover:bg-gray-700 rounded">
+                        <Link to="/owner/profile" className={`${isProfile && 'bg-gray-700'} flex items-center p-2 hover:bg-gray-700 rounded`}>
                              <FaRegUserCircle  className="mr-2"/> Profile
                         </Link>
                     </li>
-                    <li className='bg-red-500'>
-                        <button onClick={handleLogout} className="flex w-full items-center  p-2 hover:bg-red-800 rounded">
-                            <IoLogOut className="mr-2" /> LOGOUT
-                        </button>
-                    </li>
-
                 </ul>
             </nav>
         </div>

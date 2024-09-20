@@ -175,7 +175,7 @@ const CommonSlice = createSlice({
         .addCase(getSingleSchool.fulfilled, (state, action) => {
             state.status = 'succeeded';
             state.error = null;
-            state.school = action.payload.drivingSchool
+            state.school = action.payload
         })
         .addCase(getSingleSchool.rejected, (state, action) => {
             state.status = 'failed';

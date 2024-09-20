@@ -273,7 +273,7 @@ const authSlice = createSlice({
         })
         .addCase(fetchMatchedUsers.rejected, (state, action) => {
             state.status = 'failed';
-            state.error = action.payload || 'Authentication failed';
+            state.error = action.payload.message || 'Authentication failed';
         })
 
             //update avatar PATCH
@@ -307,7 +307,7 @@ const authSlice = createSlice({
             })
             .addCase(getSingleUser.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload.message || 'Authentication failed';
             })
 
             //allusers
@@ -322,7 +322,7 @@ const authSlice = createSlice({
             })
             .addCase(allUsers.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload.message || 'Authentication failed';
             })
 
 
@@ -340,7 +340,7 @@ const authSlice = createSlice({
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Authentication failed';
+                state.error = action.payload.message || 'Authentication failed';
                 state.isAuthenticated = false;
             })
 
@@ -356,7 +356,7 @@ const authSlice = createSlice({
               })
               .addCase(googleSignIn.rejected, (state, action) => {
                 state.loading = 'failed';
-                state.error = action.payload;
+                state.error = action.payload.message;
               })
 
             //register
@@ -373,7 +373,7 @@ const authSlice = createSlice({
             })
             .addCase(registerUser.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload || 'Registration failed';
+                state.error = action.payload.message || 'Registration failed';
                 state.isAuthenticated = false;
             })
 
@@ -410,7 +410,7 @@ const authSlice = createSlice({
             })
             .addCase(logoutUser.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload;
+                state.error = action.payload.message;
                 state.isAuthenticated = false;
             })
 
@@ -430,7 +430,7 @@ const authSlice = createSlice({
             })
             .addCase(editUser.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload;
+                state.error = action.payload.message;
                 state.isAuthenticated = false;
             })
 
@@ -447,7 +447,7 @@ const authSlice = createSlice({
             })
             .addCase(forgotPassword.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload;
+                state.error = action.payload.message;
             })
 
             //reset password request  
@@ -463,7 +463,7 @@ const authSlice = createSlice({
             })
             .addCase(resetPassword.rejected, (state, action) => {
                 state.status = 'failed';
-                state.error = action.payload;
+                state.error = action.payload.message;
             });
 
 

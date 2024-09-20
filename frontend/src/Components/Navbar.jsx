@@ -54,7 +54,7 @@ const Navbar = () => {
 
   const location = useLocation();
 
-  const isChatPage = location.pathname === '/instructor/chat'
+  const isChatPage = location.pathname === '/chat-page'
 
   return (
     <>
@@ -73,12 +73,14 @@ const Navbar = () => {
             {/* Check user is authenticated or not if authenticated then show their details if not then show LOGIN button */}
             {isAuth && user.role === "instructor" ?
               <div className='flex items-center gap-6'>
-                <div className='flex gap-3 items-center'> <Link to="/instructor/home">Home</Link>
-                  <Link to="/instructor/profile">Profile</Link>
+                <div className='flex gap-3 items-center'>
+                   <Link to="/instructor/home">Home</Link>
+                   <Link to="/chat-page">Chat</Link>
                   <Link to="/instructor/sessions">Sessions</Link>
                   <Link to="/instructor/attendance">Attendance</Link>
                   <Link to="/instructor/report">Report</Link>
-                  <Link to="/instructor/chat">Chat</Link>
+                  <Link to="/instructor/profile">Profile</Link>
+
                   {isChatPage && (
                     <div className="lg:flex lg:w-full md:flex-grow md:w-full  justify-end">
                       <SideDrawer />
@@ -89,40 +91,56 @@ const Navbar = () => {
                 <img
                   src={user.avatar}
                   alt={user.name}
-                  width="40px"
-                  height="40px"
-                  className="rounded-full border border-gray-300"
+
+                  className="h-8 w-8 rounded-full border border-gray-300"
                 />
               </div>
               :
-              isAuth ?
-                <>
-                  <button onClick={handleLogout} className='font-semibold bg-red-500 p-1 rounded-md text-white' >Logout</button>
+              isAuth && user.role === "learner" ?
+                <div className='flex items-center gap-6'>
+                  <div className='flex gap-3 items-center'> <Link to="/instructor/home">Home</Link>
+                    <Link to="/chat-page">Chat</Link>
+                    <Link to="/profile">Profile</Link>
+                    {isChatPage && <div ><SideDrawer /> </div>}
 
+                    <button onClick={handleLogout} className='font-semibold bg-red-500 p-1 rounded-md text-white' >Logout</button>
+                  </div>
                   <img
                     src={user.avatar}
                     alt={user.name}
-                    width="40px"
-                    height="40px"
-                    className="rounded-full border border-gray-300"
-                  /> </> :
-                <button onClick={handleShow}
-                  className={`transition-colors ${isAuth ? 'bg-primary-dark' : ''} duration-500 ease-in-out rounded px-3 py-1 border ${textColor} hover:text-white hover:bg-primary-dark`}
-                >
-                  LOGIN
-                </button>}
+                    className="h-8 w-8 rounded-full border border-gray-300"
+                  />
+                </div>
+                : isAuth ?
+                  <div className='flex gap-3 items-center'>
+                    <button onClick={handleLogout} className='font-semibold bg-red-500 p-1 rounded-md text-white' >Logout</button>
+
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+
+                      className="h-8 w-8 rounded-full border border-gray-300"
+                    />  </div>
+                  :
+                  <button onClick={handleShow}
+                    className={`transition-colors ${isAuth ? 'bg-primary-dark' : ''} duration-500 ease-in-out rounded px-3 py-1 border ${textColor} hover:text-white hover:bg-primary-dark`}
+                  >
+                    LOGIN
+                  </button>
+            }
 
           </div>
 
           <div className='lg:hidden'>
             {isAuth ?
-              <div className='flex gap-1 items-center'>  {isChatPage && <div className="lg:hidden"><SideDrawer /> </div>}
+              <div className='flex gap-1 items-center'>
+                {isChatPage && <div className="lg:hidden"><SideDrawer /> </div>}
+                <button onClick={handleLogout} className='font-semibold bg-red-500 p-1 rounded-md text-white' >Logout</button>
+
                 <img
                   src={user.avatar}
                   alt={user.name}
-                  width="40px"
-                  height="40px"
-                  className="rounded-full border border-gray-300"
+                  className="h-8 w-8 rounded-full border border-gray-300"
                 />  </div>
               :
               <button onClick={handleShow}
