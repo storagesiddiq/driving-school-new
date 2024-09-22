@@ -91,9 +91,14 @@ const LHome = () => {
 
       <div className="mt-2 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {status === 'succeeded' && visibleCourses.map(course => (
-          <div onClick={()=>navigate(`/course/${course._id}`)} key={course._id} className="flex flex-col justify-between hover:cursor-pointer border p-4 rounded shadow">
-
-           <div>  <h3 className="mt-2 text-xl font-semibold">{course.title}</h3>
+          <div onClick={()=>navigate(`/course/${course._id}`)} key={course._id} className="flex flex-col justify-between hover:cursor-pointer border  rounded shadow">
+    <img
+              src={course?.image}
+              className="rounded-md border"
+              style={{ objectFit: 'cover', display: 'block', height: '150px', width: '100%' }}
+              alt="Course Avatar"
+            />
+           <div className='p-2'>  <h3 className="mt-2 text-xl font-semibold">{course.title}</h3>
             <p>{course.description}</p>
             <p className="mt-2 font-bold">₹{course.price}</p>
             {course.ratings > 0 && (

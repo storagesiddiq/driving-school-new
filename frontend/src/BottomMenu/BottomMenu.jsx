@@ -70,6 +70,15 @@ const BottomMenu = () => {
 
 
                             </div>}
+
+                            { (user?.role === "learner") &&
+                            <div className='w-full flex justify-between' style={{ overflow: 'auto', scrollbarWidth: 'none' }}>
+                                <BottomMenuItems isAdmin={true} link={'/home'} icon={GoHome} iconActive={GoHomeFill} title="HOME" />
+                                <BottomMenuItems isAdmin={true} link={'/chat-page'} icon={IoChatbubbleEllipsesOutline} iconActive={IoChatbubbleEllipses} title="REPORT" />
+                                <BottomMenuItems isAdmin={true} link={'/profile'} icon={FaRegUserCircle} iconActive={FaUserCircle} title="PROFILE" />
+
+
+                            </div>}
                         </ul>
                     </div>
                 </div>

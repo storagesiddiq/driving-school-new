@@ -85,10 +85,15 @@ const SingleSchoolPage = () => {
       {activeTab === 'courses' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
           {school?.course?.map((course) => (
-            <div onClick={()=>{navigate(`/course/${course._id}`)}} key={course._id} className="hover-cursor:pointer border p-4 rounded shadow">
+            <div onClick={()=>{navigate(`/course/${course._id}`)}} key={course._id} className="hover-cursor:pointer border rounded shadow">
+             <img
+              src={course?.image}
+              className="hover-cursor:pointer rounded-md border"
+              style={{ objectFit: 'cover', display: 'block', height: '150px', width: '100%' }}
+              alt="Course Avatar"
+            /> <div className='hover-cursor:pointer p-2'> 
               <h3 className="text-xl font-semibold">{course.title}</h3>
-              <p>{course.description}</p>
-              <p className="font-bold">Price: ₹{course.price}</p>
+              <p className="font-semibold text-xs mt-2"> ₹{course.price}</p>
               {course.ratings > 0 && (
               <div className="flex items-center text-yellow-500 mt-2">
                 {[...Array(5)].map((_, i) => (
@@ -96,7 +101,7 @@ const SingleSchoolPage = () => {
                 ))}
                 <span className="ml-2 text-gray-500">({course.ratings})</span>
               </div>
-            )}
+            )}</div>
             </div>
           ))}
         </div>

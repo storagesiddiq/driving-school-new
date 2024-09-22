@@ -35,7 +35,9 @@ const Courses = () => {
         services: [],
         description: '',
         duration: '',
-        instructor: []
+        instructor: [],
+        image: null,
+        imagePreview: null,
     });
     const [selectedCourse, setSelectedCourse] = useState(null);
 
@@ -61,9 +63,31 @@ const Courses = () => {
         setFormData({ ...formData, [name]: value });
     };
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFormData((prevState) => ({
+                ...prevState,
+                image: file,
+                imagePreview: URL.createObjectURL(file),
+            }));
+        }
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
-        dispatch(addCourse(formData));
+        const FormDataValue = new FormData()
+        FormDataValue.append('title', formData.title);
+        FormDataValue.append('description', formData.description);
+        FormDataValue.append('duration', formData.duration);
+        FormDataValue.append('price', formData.price);
+        formData.instructor?.forEach((instructor) => FormDataValue.append('instructor[]', instructor));
+        formData.vehicles?.forEach((vehicle) => FormDataValue.append('vehicles[]', vehicle));
+        formData.services?.forEach((service) => FormDataValue.append('services[]', service));
+        if (formData.image) {
+            FormDataValue.append('image', formData.image); // Append the image file
+        }
+        dispatch(addCourse(FormDataValue));
     };
 
     const handleDelete = (id) => {
@@ -162,7 +186,7 @@ const Courses = () => {
     }, [instructors, services, vehicles]);
 
     const handleUpdate = (course) => {
-        setFormData({ ...course });
+        setFormData({ ...course, imagePreview: course.image });
         setSelectedCourse(course);
         setShowModal2(true);
     }
@@ -171,7 +195,8 @@ const Courses = () => {
         e.preventDefault()
         dispatch(updateCourse({ id: selectedCourse._id, data: formData }));
     }
-console.log(formData);
+
+    console.log(formData);
 
 
     return (
@@ -200,10 +225,11 @@ console.log(formData);
                         >
                             <div className="flex items-center gap-4 w-full sm:w-1/2">
                                 <img
-                                    src={course.drivingSchool.avatar}
-                                    width="50"
-                                    height="50"
-                                    className="rounded-full"
+                                    src={course?.image}
+                                    width="120px" // Rectangle width
+                                    height="60px" // Rectangle height
+                                    className="rounded-md border"
+                                    style={{ objectFit: 'cover', display: 'block', height: '60px', width: '120px' }} // Ensure fixed size
                                     alt="Course Avatar"
                                 />
                                 <div>
@@ -256,6 +282,24 @@ console.log(formData);
                 <Modal.Body>
                     <Form onSubmit={handleSubmit}>
                         <Form.Group className="mb-3">
+                            <Form.Label>Course Image</Form.Label>
+                            <Form.Control
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange} // Handle image selection
+                            />
+                            {formData.imagePreview && (
+                                <div className="mt-3">
+                                    <img
+                                        src={formData.imagePreview}
+                                        alt="Selected Course"
+                                        style={{ width: '200px', height: 'auto', borderRadius: '8px' }}
+                                    />
+                                </div>
+                            )}
+                        </Form.Group>
+
+                        <Form.Group className="mb-3">
                             <Form.Label>Title</Form.Label>
                             <Form.Control
                                 type="text"
@@ -307,7 +351,7 @@ console.log(formData);
                                 options={vehiclesOptions}
                                 value={vehiclesOptions.filter(option => formData.vehicles?.includes(option.value))} // Pre-select instructors based on IDs
                                 onChange={handleVehicleChange} // Handle change
-                                placeholder="Select instructors..."
+                                placeholder="Select Vehicles..."
                             />
 
                         </Form.Group>
@@ -320,7 +364,7 @@ console.log(formData);
                                 options={servicesOptions}
                                 value={servicesOptions.filter(option => formData.services?.includes(option.value))} // Pre-select instructors based on IDs
                                 onChange={handleServiceChange} // Handle change
-                                placeholder="Select instructors..."
+                                placeholder="Select Services..."
                             />
 
                         </Form.Group>
@@ -339,7 +383,7 @@ console.log(formData);
                         </Form.Group>
 
                         <Button disabled={status === 'loading'} variant="primary" type="submit">
-                            {status === 'loading' ? <Spinner /> : 'Update'}
+                            {status === 'loading' ? <Spinner /> : 'Add'}
                         </Button>
                     </Form>
                 </Modal.Body>
@@ -352,6 +396,24 @@ console.log(formData);
                 </Modal.Header>
                 <Modal.Body>
                     <Form onSubmit={handleUpdateSubmit}>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Course Image</Form.Label>
+                            <Form.Control
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange} // Handle image selection
+                            />
+                            {formData.imagePreview && (
+                                <div className="mt-3">
+                                    <img
+                                        src={formData.imagePreview}
+                                        alt="Selected Course"
+                                        style={{ width: '200px', height: 'auto', borderRadius: '8px' }}
+                                    />
+                                </div>
+                            )}
+                        </Form.Group>
+
                         <Form.Group className="mb-3">
                             <Form.Label>Title</Form.Label>
                             <Form.Control

@@ -1,17 +1,27 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
 const instructorSchema = new mongoose.Schema({
     instructor: {
         type: mongoose.Schema.ObjectId,
         ref: 'User',
+        required: true
     },
     courses: [{
         type: mongoose.Schema.ObjectId,
         ref: 'Course',
     }],
-    drivingSchool:{
+    drivingSchool: {
         type: mongoose.Schema.ObjectId,
         ref: 'drivingSchool',
+    },
+    experience: {
+        type: Number, // Years of experience
+        required: true,
+    },
+    
+    bio: {
+        type: String, // Short bio or description about the instructor
+        maxlength: 500,
     },
     attendance: [{
         date: {
@@ -40,4 +50,4 @@ const instructorSchema = new mongoose.Schema({
     timestamps: true,
 });
 
-module.exports = mongoose.model('Instructor', instructorSchema)
+module.exports = mongoose.model('Instructor', instructorSchema);

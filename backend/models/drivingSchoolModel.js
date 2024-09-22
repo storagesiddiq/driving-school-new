@@ -34,24 +34,25 @@ const drivingSchoolSchema = new mongoose.Schema({
     location:{
         type: String,
     },
+    address:{
+        type:String
+    },
+    website:{
+        type:String
+    },
+    schoolEmail:{
+        type:String
+    }, 
+     schoolNumber:{
+        type:String
+    },
+    schoolRegNumber:{
+        type:String
+    },
+    whatsapp:{
+        type:String
+    }
 
-    // instructors: [
-    //     {
-    //         type: mongoose.Schema.ObjectId,
-    //         ref: 'User',
-    //         validate: {
-    //             validator: async function (value) {
-    //                 const user = await mongoose.model('User').findById(value);
-    //                 return user && user.role === 'instructor';
-    //             },
-    //             message: 'Assigned user is not an instructor',
-    //         },
-    //     }
-    // ],
-    // courses: [{
-    //     type: mongoose.Schema.ObjectId,
-    //     ref: 'Course',
-    // }]
 }, {
     timestamps: true,
 });

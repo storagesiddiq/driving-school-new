@@ -1,16 +1,16 @@
 const mongoose = require('mongoose')
 
 const learnerSchema = new mongoose.Schema({
-    user:{
+    user: {
         type: mongoose.Schema.ObjectId,
         ref: 'User',
-        require:true,
+        require: true,
         validate: {
             validator: async function (value) {
                 const user = await mongoose.model('User').findById(value);
                 return user && user.role === 'learner';
             },
-            message: 'Assigned user is not an learner',
+            message: 'Assigned user is not a learner',
         },
     },
     courses: [{
@@ -21,10 +21,20 @@ const learnerSchema = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: 'Attendance',
     }],
-    location:{
-        type:String,
+    location: {
+        type: String,
+    },
+    dateOfBirth: { type: Date },
+    address: { type: String },
+    isDrivingLicense: { type: Boolean },
+    driversLicenseNumber: { type: String },
+    idProofNo: { type: String },
+    parentGuardianInfo: {
+        name: { type: String },
+        phoneNumber: { type: String }
     }
-},{
+
+}, {
     timestamps: true,
 });
 

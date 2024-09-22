@@ -11,5 +11,4 @@ router.get('/my-courses', isAuthenticatedUser, authorizeRoles('learner'), Learne
 router.get('/my-sessions', isAuthenticatedUser, authorizeRoles('learner'), Learner.getLearnerSessions)
 router.get('/my-session-attendance/:sessionId', isAuthenticatedUser, authorizeRoles('learner'), Learner.getLearnerAttendance)
 
-
 module.exports = router

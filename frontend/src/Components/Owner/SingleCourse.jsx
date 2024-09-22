@@ -23,12 +23,17 @@ const SingleCourse = () => {
     return (
         <div className="h-screen max-w-5xl mx-auto p-4">
             {/* Course Info */}
-            <div className=" bg-white shadow-md rounded-lg p-6 mb-6">
-                <div className='w-full flex flex-col md:flex-row justify-between'>
+            <div className="bg-white shadow-md rounded-lg p-6 mb-6">
+                <div className="w-full flex flex-col md:flex-row justify-between">
                     {/* Course Info */}
-                    <div className="w-1/2">
-                        <div className="flex items-center space-x-4 mb-4">
-                            <img src={course?.drivingSchool?.avatar} alt="School Logo" className="w-16 h-16 rounded-full" />
+                    <div className="w-full md:w-1/2 mb-6 md:mb-0">
+                        <div className="flex flex-col  md:items-center space-y-4 md:space-y-0 mb-4">
+                            <img
+                                src={course?.image}
+                                className="rounded-md border"
+                                style={{ objectFit: 'cover', display: 'block', height: '180px', width: '100%' }}
+                                alt="Course Avatar"
+                            />
                             <div>
                                 <h1 className="text-2xl font-bold">{course?.title}</h1>
                                 <p className="text-gray-600">{course?.drivingSchool?.drivingSchoolName}, {course?.drivingSchool?.location}</p>
@@ -36,18 +41,18 @@ const SingleCourse = () => {
                         </div>
                         <p className="text-gray-700 mb-4">{course?.description}</p>
                         <p><strong>Duration:</strong> {course?.duration} hour(s)</p>
-                      { course?.ratings > 0 && <p><strong>Ratings:</strong> {course?.ratings}</p>}
+                        {course?.ratings > 0 && <p><strong>Ratings:</strong> {course?.ratings}</p>}
                     </div>
 
                     {/* Instructor Info */}
-                    <div className="w-1/2  flex flex-col items-center mt-6 md:mt-0">
-                   <h1 className='text-2xl'>  Instructor </h1>
+                    <div className="lg:w-1/2  flex flex-col items-center mt-6 md:mt-0">
+                        <h1 className='text-2xl'>  Instructor </h1>
                         {course?.instructor && course?.instructor.length > 0 &&
                             course?.instructor.map((instructor, index) => (
                                 <div key={index} className="my-2 border rounded-md p-2 flex gap-3 items-center mb-4">
                                     <img src={instructor?.avatar} alt="Instructor Avatar" className="w-10 h-10 rounded-full mx-auto" />
-                                   <div> <h2 className="text-l font-bold ">{instructor?.name}</h2>
-                                    <p className="text-xs text-gray-600">{instructor?.email}</p>
+                                    <div> <h2 className="text-l font-bold ">{instructor?.name}</h2>
+                                        <p className="text-xs text-gray-600">{instructor?.email}</p>
                                     </div>
                                 </div>
                             ))

@@ -153,7 +153,11 @@ export const addCourse = createAsyncThunk('owner/addCourse', async (formData,
     try {
         console.log(formData);
         
-        const response = await API.post('/create-course', formData);
+        const response = await API.post('/create-course', formData,{
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            }
+          });
         return response.data;
     } catch (error) {
         return rejectWithValue(error.response.data);
@@ -176,7 +180,11 @@ export const deleteCourse = createAsyncThunk('owner/deleteCourse',
 export const updateCourse = createAsyncThunk('owner/updateCourse',
     async ({id,data}, { rejectWithValue }) => {
         try {
-            const response = await API.put(`/course/${id}`,data);
+            const response = await API.put(`/course/${id}`,data,{
+                headers: {
+                  'Content-Type': 'multipart/form-data',
+                }
+              });
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response.data);

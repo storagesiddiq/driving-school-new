@@ -21,11 +21,19 @@ const SingleDrivingSchool = () => {
   if (status === 'loading') return <div>Loading...</div>;
   if (error) return <div className="text-red-500">Error: {error.message}</div>;
 
+  
   const renderCourses = () => (
     <div>
       {school?.courses?.length ? (
         school.courses.map((course) => (
           <div key={course._id} className="border bg-white p-2 rounded-md rounded-lg shadow-md mb-4">
+           
+           <img
+              src={course?.image}
+              className="rounded-md border"
+              style={{ objectFit: 'cover', display: 'block', height: '150px', width: '100%' }}
+              alt="Course Avatar"
+            />
             <h4 className="text-lg font-semibold text-gray-800">{course.title}</h4>
             <p className="text-gray-600">{course.description}</p>
             <p className="text-gray-500">Duration: {course.duration} hours</p>

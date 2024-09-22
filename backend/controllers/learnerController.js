@@ -3,6 +3,7 @@ const { registerLearner, Course, Session } = require('../models/courseModel');
 const errorHandler = require('../utils/errorHandler');
 const Review = require('../models/reviewModel')
 const Attendance = require('../models/attendanceModel')
+const Learner = require('../models/learnerModel')
 
 // Create a new learner registration
 exports.createRegistration = catchAsyncError(async (req, res, next) => {
@@ -179,3 +180,5 @@ exports.getLearnerAttendance = catchAsyncError(async (req, res, next) => {
         attendances:formattedAttendances,
     });
 })
+
+

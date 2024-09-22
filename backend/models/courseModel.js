@@ -91,6 +91,11 @@ const registerlearnerSchema = new mongoose.Schema({
 });
 
 const courseSchema = new mongoose.Schema({
+    image:{
+        type: String,
+        required: [true, 'Please Select Image!'],
+
+    },
     drivingSchool:{
         type: mongoose.Schema.ObjectId,
         ref: 'drivingSchool',

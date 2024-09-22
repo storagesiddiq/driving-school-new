@@ -81,13 +81,18 @@ const CommonSingleCourse = () => {
     return (
         <div className="min-h-screen max-w-5xl mt-5 mx-auto p-4">
             <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-                <div className="w-full flex flex-col md:flex-row justify-between gap-6">
+                <div className="w-full flex flex-col md:flex-row justify-between gap-8">
                     <div className="w-full md:w-1/2">
-                        <div className="flex items-center space-x-4 mb-4">
-                            <img src={course?.drivingSchool?.avatar} alt="School Logo" className="w-16 h-16 rounded-full" />
-                            <div>
+                        <div className="flex flex-col items-center mb-4">
+                        <img
+                                src={course?.image}
+                                className="rounded-md border"
+                                style={{ objectFit: 'cover', display: 'block', height: '200px', width: '100%' }}
+                                alt="Course Avatar"
+                            />                           
+                             <div>
                                 <h1 className="text-2xl font-bold">{course?.title}</h1>
-                                <p className="text-gray-600">{course?.drivingSchool?.drivingSchoolName}, {course?.drivingSchool?.location}</p>
+                                <p className="text-gray-600 text-xs">{course?.drivingSchool?.drivingSchoolName}, {course?.drivingSchool?.location}</p>
                             </div>
                         </div>
                         <p className="text-gray-700 mb-4">{course?.description}</p>

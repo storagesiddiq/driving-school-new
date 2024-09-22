@@ -103,7 +103,7 @@ const OwnerDashboard = () => {
         <div>
             {school?.course?.length ? (
                 school.course.map((course) => (
-                    <div onClick={()=>navigate(`/owner/course/${course._id}`)} key={course._id} className="border bg-white p-4 rounded-lg shadow-md mb-4">
+                    <div onClick={() => navigate(`/owner/course/${course._id}`)} key={course._id} className="border bg-white p-4 rounded-lg shadow-md mb-4">
                         <h4 className="text-lg font-semibold text-gray-800">{course.title}</h4>
                         <p className="text-gray-600">{course.description}</p>
                         <p className="text-gray-500">Duration: {course.duration} Weeks</p>
@@ -146,6 +146,9 @@ const OwnerDashboard = () => {
             )}
         </div>
     );
+
+    console.log(school);
+
 
     return (
         <>
@@ -259,6 +262,57 @@ const OwnerDashboard = () => {
                         </button>
                     </div>
                 </div>
+
+                <div className="my-4 p-4 bg-white shadow-sm border rounded-md">
+                    {/* School Email */}
+                    {school?.drivingSchool?.schoolEmail && (
+                        <div className="flex items-center gap-2 border rounded-md p-2 my-2">
+                            <span className="w-1/2 font-semibold">Driving School Email:</span>
+                            <span className="w-1/2  text-gray-700">{school?.drivingSchool?.schoolEmail}</span>
+                        </div>
+                    )}
+
+                    {/* School Number */}
+                    {school?.drivingSchool?.schoolNumber && (
+                        <div className="flex items-center justify-between gap-2 border rounded-md p-2 my-2">
+                            <span className="w-1/2 font-semibold">Driving School Number:</span>
+                            <span className="w-1/2 text-gray-700">{school?.drivingSchool?.schoolNumber}</span>
+                        </div>
+                    )}
+
+                    {/* School Registration Number */}
+                    {school?.drivingSchool?.schoolRegNumber && (
+                        <div className="flex items-center justify-between gap-2 border rounded-md p-2 my-2">
+                            <span className="w-1/2 font-semibold">Driving School Registration Number:</span>
+                            <span className="w-1/2 text-gray-700">{school?.drivingSchool?.schoolRegNumber}</span>
+                        </div>
+                    )}
+
+                    {/* Website */}
+                    {school?.drivingSchool?.website && (
+                        <div className="flex items-center justify-between gap-2 border rounded-md p-2 my-2">
+                            <span className="w-1/2 font-semibold">Website:</span>
+                            <a
+                                href={school?.drivingSchool?.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-1/2 text-blue-600 hover:underline"
+                            >
+                                {school?.drivingSchool?.website}
+                            </a>
+                        </div>
+                    )}
+
+                    {/* WhatsApp Number */}
+                    {school?.drivingSchool?.whatsapp && (
+                        <div className="flex items-center justify-between gap-2 border rounded-md p-2 my-2">
+                            <span className="w-1/2 font-semibold">WhatsApp Number:</span>
+                            <span className="w-1/2 text-gray-700">{school?.drivingSchool?.whatsapp}</span>
+                        </div>
+                    )}
+                </div>
+
+
 
                 <div className="bg-white p-6 rounded-lg shadow-md">
                     {activeTab === 'courses' && renderCourses()}

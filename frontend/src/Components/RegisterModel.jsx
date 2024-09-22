@@ -4,7 +4,7 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Form from 'react-bootstrap/Form';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearError,  googleSignIn,  loginAuthError, loginAuthStatus, loginAuthUser, registerUser } from '../slices/authSlice';
+import { clearError, googleSignIn, loginAuthError, loginAuthStatus, loginAuthUser, registerUser } from '../slices/authSlice';
 import { FcGoogle } from 'react-icons/fc';
 
 const RegisterModel = ({ show, handleClose }) => {
@@ -17,10 +17,11 @@ const RegisterModel = ({ show, handleClose }) => {
     const [confirmPassword, setConfirmPassword] = useState('')
     const [number, setNumber] = useState('')
     const [location, setLocation] = useState('')
+    const [isSelected, setIsSelected] = useState(false)
+    const [isLearner, setIsLearner] = useState(false)
 
     const error = useSelector(loginAuthError);
     const status = useSelector(loginAuthStatus);
-    const user = useSelector(loginAuthUser);
 
     const [errors, setErrors] = useState({
         name: '',
@@ -61,7 +62,7 @@ const RegisterModel = ({ show, handleClose }) => {
         e.preventDefault();
         if (validateForm()) {
             let FormDatas = {
-                name, email, password, role: "learner", location, phoneNumber: number
+                name, email, password, role: isLearner ? "learner" : 'owner', location, phoneNumber: number
             }
             dispatch(registerUser(FormDatas));
             navigate('/')
@@ -101,13 +102,13 @@ const RegisterModel = ({ show, handleClose }) => {
     const handleGoogleSignIn = () => {
         window.location.href = 'http://localhost:3001/api/auth/google';
 
-      };
+    };
 
     return (
         <Modal
             fullscreen="md-down"
             show={show}
-            onHide={handleClose}
+            onHide={() => { handleClose(); setIsSelected(false); setIsLearner(false)  }}
             aria-labelledby="contained-modal-title-vcenter"
             centered
             className="custom-modal">
@@ -116,77 +117,85 @@ const RegisterModel = ({ show, handleClose }) => {
             </Modal.Header>
             <Modal.Body>
 
-                <button onClick={handleGoogleSignIn}
-                    className="flex items-center justify-center w-full px-4 py-2 mt-3 text-white bg-gray-100 border border-gray-300 rounded-md shadow-md hover:bg-gray-200 transition duration-300 ease-in-out"
-                >
-                    <FcGoogle className="mr-3 text-xl" /> {/* Google icon */}
-                    <span className="text-gray-700 font-semibold">Sign in with Google</span>
-                </button>
+                {!isSelected &&
+                    <div className='flex items-center justify-between '>
+                        <button className='border hover:bg-primary-dark hover:text-white rounded-md shadow-sm p-2 m-2' onClick={() => { setIsSelected(true); setIsLearner(true) }}>Learner</button>
+                        <button className='border  hover:bg-primary-dark hover:text-white  rounded-md shadow-sm p-2 m-2' onClick={() => {setIsSelected(true);  setIsLearner(false) }}>Driving School</button>
+                    </div>}
 
-                <div className='text-center my-3'>(OR)</div>
-                <form onSubmit={handleSubmit}>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <FloatingLabel
-                            controlId="floatingInput"
-                            label="Name"
-
-                        >
-                            <Form.Control onChange={(e) => setName(e.target.value)} value={name} className='focus:ring-0 no-focus-border' type="text" placeholder="name@example.com" />
-                            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-
-                        </FloatingLabel>
-                        <FloatingLabel
-                            controlId="floatingInput"
-                            label="Email address"
-                            className="mb-3"
-                        >
-                            <Form.Control onChange={(e) => setEmail(e.target.value)} value={email} className='focus:ring-0 no-focus-border' type="email" placeholder="name@example.com" />
-                            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
-
-                        </FloatingLabel>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <FloatingLabel controlId="floatingPassword" label="Password">
-                            <Form.Control onChange={(e) => setPassword(e.target.value)} value={password} className='focus:ring-0 no-focus-border' type="password" placeholder="Password" />
-                            {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-                        </FloatingLabel>
-                        <FloatingLabel controlId="floatingPassword" label="Confirm Password">
-                            <Form.Control onChange={(e) => setConfirmPassword(e.target.value)} value={confirmPassword} className='focus:ring-0 no-focus-border' type="password" placeholder="Password" />
-                            {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
-
-                        </FloatingLabel>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <FloatingLabel controlId="floatingInput" label="Phone Number" className="mt-3">
-                            <Form.Control
-                                onChange={handlePhoneNumberChange}
-                                value={number}
-                                className="focus:ring-0 no-focus-border"
-                                type="text"
-                                placeholder="Enter your phone number"
-                                maxLength="10"
-                            />
-                            {errors.number && <p className="text-red-500 text-sm mt-1">{errors.number}</p>}
-                        </FloatingLabel>
-                        <FloatingLabel
-                            controlId="floatingInput"
-                            label="Location"
-                            className="my-3"
-                        >
-                            <Form.Control onChange={(e) => setLocation(e.target.value)} value={location} className='focus:ring-0 no-focus-border' type="text" placeholder="name@example.com" />
-                            {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
-
-                        </FloatingLabel>
-                    </div>
-                    {errors.apiError && (
-                        <p className="text-red-500 text-sm mt-1">{errors.apiError}</p>
-                    )}
-                    <button disabled={status === "loading" ? true : false} className='text-white w-full mt-3 px-3 py-2 bg-primary-light rounded-md transition duration-300 ease-in-out hover:bg-primary-dark hover:shadow-lg transform'>
-                        {status === 'loading' ? 'loading...' : 'Register'}
+                {isSelected && <>
+                 { isLearner &&   <> <button onClick={handleGoogleSignIn}
+                        className="flex items-center justify-center w-full px-4 py-2 mt-3 text-white bg-gray-100 border border-gray-300 rounded-md shadow-md hover:bg-gray-200 transition duration-300 ease-in-out"
+                    >
+                        <FcGoogle className="mr-3 text-xl" /> {/* Google icon */}
+                        <span className="text-gray-700 font-semibold">Sign in with Google</span>
                     </button>
-                </form>
 
+                        <div className='text-center my-3'>(OR)</div>
+                    </>}
+                    <form onSubmit={handleSubmit}>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <FloatingLabel
+                                controlId="floatingInput"
+                                label="Name"
+
+                            >
+                                <Form.Control onChange={(e) => setName(e.target.value)} value={name} className='focus:ring-0 no-focus-border' type="text" placeholder="name@example.com" />
+                                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+
+                            </FloatingLabel>
+                            <FloatingLabel
+                                controlId="floatingInput"
+                                label="Email address"
+                                className="mb-3"
+                            >
+                                <Form.Control onChange={(e) => setEmail(e.target.value)} value={email} className='focus:ring-0 no-focus-border' type="email" placeholder="name@example.com" />
+                                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+
+                            </FloatingLabel>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <FloatingLabel controlId="floatingPassword" label="Password">
+                                <Form.Control onChange={(e) => setPassword(e.target.value)} value={password} className='focus:ring-0 no-focus-border' type="password" placeholder="Password" />
+                                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+                            </FloatingLabel>
+                            <FloatingLabel controlId="floatingPassword" label="Confirm Password">
+                                <Form.Control onChange={(e) => setConfirmPassword(e.target.value)} value={confirmPassword} className='focus:ring-0 no-focus-border' type="password" placeholder="Password" />
+                                {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+
+                            </FloatingLabel>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <FloatingLabel controlId="floatingInput" label="Phone Number" className="mt-3">
+                                <Form.Control
+                                    onChange={handlePhoneNumberChange}
+                                    value={number}
+                                    className="focus:ring-0 no-focus-border"
+                                    type="text"
+                                    placeholder="Enter your phone number"
+                                    maxLength="10"
+                                />
+                                {errors.number && <p className="text-red-500 text-sm mt-1">{errors.number}</p>}
+                            </FloatingLabel>
+                            <FloatingLabel
+                                controlId="floatingInput"
+                                label="Location"
+                                className="my-3"
+                            >
+                                <Form.Control onChange={(e) => setLocation(e.target.value)} value={location} className='focus:ring-0 no-focus-border' type="text" placeholder="name@example.com" />
+                                {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
+
+                            </FloatingLabel>
+                        </div>
+                        {errors.apiError && (
+                            <p className="text-red-500 text-sm mt-1">{errors.apiError}</p>
+                        )}
+                        <button disabled={status === "loading" ? true : false} className='text-white w-full mt-3 px-3 py-2 bg-primary-light rounded-md transition duration-300 ease-in-out hover:bg-primary-dark hover:shadow-lg transform'>
+                            {status === 'loading' ? 'loading...' : 'Register'}
+                        </button>
+                    </form>
+                </>}
 
             </Modal.Body>
         </Modal>

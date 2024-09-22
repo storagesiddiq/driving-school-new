@@ -42,8 +42,6 @@ exports.createDrivingSchool = CatchAsyncError(async (req, res, next) => {
             location
         });
 
-        console.log(password);
-
         if (drivingSchool) {
             const message = `
             Dear ${name},

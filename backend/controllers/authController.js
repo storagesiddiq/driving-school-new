@@ -9,8 +9,13 @@ const sendEmail = require('../utils/email')
 const crypto = require('crypto')
 const Learner = require('../models/learnerModel')
 const getLocation = require('../utils/getLocation')
-const {Session} = require('../models/courseModel');
+const { Session } = require('../models/courseModel');
 const searchFeatures = require("../utils/searchFeature");
+const Instructor = require('../models/instructorModel')
+const Owner = require('../models/drivingSchoolModel');
+const drivingSchoolModel = require("../models/drivingSchoolModel");
+
+
 // To register user
 exports.registerUser = catchAsyncError(async (req, res, next) => {
     try {
@@ -35,9 +40,17 @@ exports.registerUser = catchAsyncError(async (req, res, next) => {
 
         // If the user is a learner, create a learner record
         if (role === "learner") {
-            const learner = await Learner.create({
+            await Learner.create({
                 user: user._id,
                 location,
+            });
+        }
+
+        if (role === "owner") {
+            await drivingSchoolModel.create({
+                owner: user._id,
+                drivingSchoolName:`${name} + School`,
+                location
             });
         }
 
@@ -92,61 +105,188 @@ exports.getUserProfile = catchAsyncError(async (req, res, next) => {
             return next(new errorHandler("User not found", 404));
         }
 
-        res.status(200).json({
+        let roleData;
+        if (user.role === "learner") {
+            roleData = await Learner.findOne({ user: req.user.id });
+            if (!roleData) {
+                return next(new errorHandler('Learner not found', 404));
+            }
+            user._doc.learner = roleData; // Attach learner data to user
+        } else if (user.role === "instructor") {
+            roleData = await Instructor.findOne({ instructor: req.user.id });
+            if (!roleData) {
+                return next(new errorHandler('Instructor not found', 404));
+            }
+            user._doc.instructor = roleData; // Attach instructor data to user
+        } else if (user.role === "owner") {
+            roleData = await Owner.findOne({ owner: req.user.id });
+            if (!roleData) {
+                return next(new errorHandler('Owner not found', 404));
+            }
+            user._doc.owner = roleData; // Attach owner data to user
+        }
+
+        return res.status(200).json({
             success: true,
-            user,
+            user
         });
     } catch (error) {
         return next(new errorHandler("Server error", 500));
     }
 });
 
+
+
 //update Profile - api/update-profile/:id
 exports.updateProfile = catchAsyncError(async (req, res, next) => {
-    let newUserData = {
-        ...req.body
-    };
-
+    let newUserData = { ...req.body };
     let avatar = null;
 
+    // Find the user by ID
     const existuser = await User.findById(req.user.id);
     if (!existuser) {
-
         return res.status(404).json({
             success: false,
             error: 'User not found',
         });
     }
 
-    // Check if req.file exists to update avatar
+    // Handle avatar update
     if (req.file) {
         const oldAvatar = path.join(__dirname, '..', 'uploads/user', path.basename(existuser.avatar));
-        deleteImage(oldAvatar);
-        // Get the URL for the new image
-        avatar = getImageUrl(req, req.file, 'user');
+        deleteImage(oldAvatar); // Function to delete the old avatar file
+        avatar = getImageUrl(req, req.file, 'user'); // Function to get the new avatar URL
     } else {
-        // If no new image is uploaded, keep the old image
         avatar = existuser.avatar;
     }
 
+    // Add the avatar to newUserData
     newUserData.avatar = avatar;
 
-
-    // Update user in the database
+    // Update the User profile
     const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
-        new: true, // Return the updated user object
-        runValidators: true // Run validators on update
+        new: true, // Return the updated document
+        runValidators: true // Ensure the updated data is validated
     });
-    await user.save()
 
     if (!user) {
         return res.status(404).json({
             success: false,
-            message: 'User not found'
+            message: 'User update failed'
         });
     }
-    res.status(200).json({
+
+    // If the user is a learner, update learner-specific fields
+    if (req.user.role === 'learner') {
+        const learner = await Learner.findOne({ user: req.user.id });
+
+        if (!learner) {
+            return next(new errorHandler('Learner not found', 404));
+        }
+
+        const {
+            dateOfBirth,
+            address,
+            isDrivingLicense,
+            driversLicenseNumber,
+            idProofNo,
+            parName,
+            parPhoneNumber
+        } = req.body;
+
+        // Update learner's private details
+        if (dateOfBirth) learner.dateOfBirth = dateOfBirth;
+        if (address) learner.address = address;
+        if (typeof isDrivingLicense !== 'undefined') learner.isDrivingLicense = isDrivingLicense; // Boolean field
+        if (driversLicenseNumber) learner.driversLicenseNumber = driversLicenseNumber;
+        if (idProofNo) learner.idProofNo = idProofNo;
+        if (parName) learner.parentGuardianInfo.name = parName;
+        if (parPhoneNumber) learner.parentGuardianInfo.phoneNumber = parPhoneNumber;
+
+        // Save the updated learner profile
+        await learner.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'Learner profile updated successfully',
+            user,
+            learner
+        });
+    }
+
+    // If the user is a instructor, update learner-specific fields
+    if (req.user.role === 'instructor') {
+        const instructor = await Instructor.findOne({ instructor: req.user.id });
+        if (!instructor) {
+            return next(new errorHandler('instructor not found', 404));
+        }
+
+        const {
+            experience,
+            certifications,
+            bio
+        } = req.body;
+
+        // Update learner's private details
+        if (experience) instructor.experience = experience;
+        if (certifications && Array.isArray(certifications)) {
+            instructor.certifications = certifications.map(cert => ({
+                title: cert.title,
+                institution: cert.institution,
+                dateObtained: cert.dateObtained,
+            }));
+        } if (bio) instructor.bio = bio;
+
+        // Save the updated learner profile
+        await instructor.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'instructor profile updated successfully',
+            user,
+            instructor
+        });
+    }
+
+    if (req.user.role === 'owner') {
+        const school = await Owner.findOne({ owner: req.user.id });
+        if (!school) {
+            return next(new errorHandler('School not found', 404));
+        }
+
+        const {
+            address,
+            website,
+            googleMap,
+            schoolEmail,
+            schoolNumber,
+            schoolRegNumber,
+            whatsapp
+        } = req.body;
+
+        if (address) school.address = address;
+        if (website) school.website = website;
+        if (googleMap) school.googleMap = googleMap;
+        if (schoolEmail) school.schoolEmail = schoolEmail;
+        if (schoolNumber) school.schoolNumber = schoolNumber;
+        if (schoolRegNumber) school.schoolRegNumber = schoolRegNumber;
+        if (whatsapp) school.whatsapp = whatsapp;
+        // Save the updated learner profile
+        await school.save();
+
+        return res.status(200).json({
+            success: true,
+            message: 'school profile updated successfully',
+            user,
+            school
+        });
+    }
+
+
+
+    return res.status(200).json({
         success: true,
+        message: 'User profile updated successfully',
         user
     });
 });

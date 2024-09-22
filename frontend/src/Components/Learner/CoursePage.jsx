@@ -10,7 +10,7 @@ import Spinner from '../../utils/Spinner';
 const CoursesPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   const status = useSelector(Status);
   const error = useSelector(Error);
   const courses = useSelector(allCourses);
@@ -37,10 +37,10 @@ const CoursesPage = () => {
 
   useEffect(() => {
     dispatch(getMyCourses());
-    if(isUpdate){
+    if (isUpdate) {
       dispatch(clearUpdated())
     }
-  }, [isUpdate,dispatch]);
+  }, [isUpdate, dispatch]);
 
   const loadMoreCourses = useCallback(() => {
     if (loading || !hasMore) return; // Prevent loading if already in progress or no more courses
@@ -100,9 +100,16 @@ const CoursesPage = () => {
           <div
             onClick={() => navigate(`/course/${course._id}`)}
             key={course._id}
-            className="flex flex-col justify-between hover:cursor-pointer border p-4 rounded shadow"
+            className="flex flex-col justify-between hover:cursor-pointer borderrounded shadow"
           >
-            <div>
+            <img
+              src={course?.image}
+              className="rounded-md border"
+              style={{ objectFit: 'cover', display: 'block', height: '150px', width: '100%' }}
+              alt="Course Avatar"
+            />
+            <div className='p-2'>
+
               <h3 className="mt-2 text-xl font-semibold">{course.title}</h3>
               <p>{course.description}</p>
               <p className="font-bold">₹{course.price}</p>
@@ -120,23 +127,23 @@ const CoursesPage = () => {
                 e.stopPropagation();
                 handleApplyCourse(course._id);
               }}
-              disabled={isCourseApplied(course._id) ||  isCourseApproved(course._id) || isCourseRejected(course._id)  || learnStatus === "loading"}
-              className={`mt-2 w-full font-semibold py-2 text-white text-center rounded-md ${isCourseApplied(course._id) ? 'bg-blue-400' : isCourseApproved(course._id) ? 'bg-green-500' :  isCourseRejected(course._id) ? 'bg-red-500' : 'bg-primary-dark'}`}
+              disabled={isCourseApplied(course._id) || isCourseApproved(course._id) || isCourseRejected(course._id) || learnStatus === "loading"}
+              className={`mt-2 w-full font-semibold py-2 text-white text-center rounded-md ${isCourseApplied(course._id) ? 'bg-blue-400' : isCourseApproved(course._id) ? 'bg-green-500' : isCourseRejected(course._id) ? 'bg-red-500' : 'bg-primary-dark'}`}
             >
               {learnStatus === "loading" && !isCourseApplied(course._id) ? (
                 <Spinner />
               ) : isCourseApplied(course._id) ? (
                 'APPLIED'
-              ) : 
-              isCourseApproved(course._id) ? (
-                'APPROVED'
-              ) : 
-              isCourseRejected(course._id) ? (
-                'REJECTED'
               ) :
-              (
-                'APPLY'
-              )}
+                isCourseApproved(course._id) ? (
+                  'APPROVED'
+                ) :
+                  isCourseRejected(course._id) ? (
+                    'REJECTED'
+                  ) :
+                    (
+                      'APPLY'
+                    )}
             </button>
           </div>
         ))}

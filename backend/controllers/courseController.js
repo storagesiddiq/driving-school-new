@@ -3,7 +3,10 @@ const DrivingSchool = require("../models/drivingSchoolModel");
 const { Course } = require("../models/courseModel");
 const errorHandler = require("../utils/errorHandler");
 const Instructor = require("../models/instructorModel");
-const Vechicles = require('../models/vehicleModel')
+const Vechicles = require('../models/vehicleModel');
+const { getImageUrl, deleteImage } = require("../utils/handleImageUrl");
+const path = require('path');
+
 
 //Get ALl courses
 exports.getAllCourses = catchAsyncError(async (req, res, next) => {
@@ -88,60 +91,39 @@ exports.getCourseById = catchAsyncError(async (req, res, next) => {
 
 //Create Course = instructor is instructor _id it's instructor.instructor
 exports.createCourse = catchAsyncError(async (req, res, next) => {
-    const {
-        title,
-        vehicles,
-        services,
-        description,
-        duration,
-        instructor,
-        price
-    } = req.body;
+    const { title, vehicles, services, description, duration, instructor, price } = req.body;
 
-    // Check if the driving school is owned by the logged-in user
+    // Find driving school owned by the logged-in user
     const drivingSchool = await DrivingSchool.findOne({ owner: req.user.id });
+    if (!drivingSchool) return next(new errorHandler('Driving School not found or you are not the owner', 404));
 
-    if (!drivingSchool) {
-        return next(new errorHandler('Driving School not found or you are not the owner', 404));
-    }
+    // Validate instructors
+    if (!instructor?.length) return next(new errorHandler('Please select at least one instructor', 400));
 
-    // Check if instructors are provided
-    if (!instructor || instructor.length === 0) {
-        return next(new errorHandler('Course should have at least one instructor, please select an instructor', 400));
-    }
-
-    // Validate that instructors are associated with the current driving school
     const validInstructors = await Instructor.find({
         instructor: { $in: instructor },
         drivingSchool: drivingSchool._id
     });
-
     if (validInstructors.length !== instructor.length) {
-        return next(new errorHandler('One or more instructors are invalid or do not belong to your Driving School', 400));
+        return next(new errorHandler('Invalid instructors or do not belong to your Driving School', 400));
     }
 
-    // Create a new course
+    // Handle course image if provided
+    if (req.file) req.body.image = getImageUrl(req, req.file, 'course');
+
+    // Create course
     const course = await Course.create({
         drivingSchool: drivingSchool._id,
-        title,
-        vehicles,
-        services,
-        description,
-        duration,
-        instructor,
-        price
+        title, vehicles, services, description, duration, instructor, price, image: req.body.image
     });
 
-    // Add the course ID to each valid instructor's courses array
-    await Promise.all(validInstructors.map(async (inst) => {
+    // Add course to instructors
+    await Promise.all(validInstructors.map(inst => {
         inst.courses.push(course._id);
-        await inst.save();
+        return inst.save();
     }));
-    res.status(201).json({
-        success: true,
-        message: 'Course created successfully',
-        course
-    });
+
+    res.status(201).json({ success: true, message: 'Course created successfully', course });
 });
 
 //Delete Course
@@ -162,7 +144,7 @@ exports.deleteCourse = catchAsyncError(async (req, res, next) => {
 
     // Remove the course ID from the instructors' courses array
     await Promise.all(course.instructor.map(async (instId) => {
-        const inst = await Instructor.findOne({instructor:instId});
+        const inst = await Instructor.findOne({ instructor: instId });
         inst.courses.pull(course._id);
         await inst.save();
     }));
@@ -214,7 +196,7 @@ exports.updateCourse = catchAsyncError(async (req, res, next) => {
 
         // Remove the course ID from the previous instructors' courses array
         await Promise.all(previousInstructors.map(async (instId) => {
-            const inst = await Instructor.findOne({instructor:instId});            
+            const inst = await Instructor.findOne({ instructor: instId });
             if (inst) { // Check if the instructor exists
                 inst.courses.pull(course._id);
                 await inst.save();
@@ -228,6 +210,15 @@ exports.updateCourse = catchAsyncError(async (req, res, next) => {
         }));
 
         course.instructor = instructor; // Replace the instructor list with the new one
+    }
+
+    // Update image if provided in the request
+     if (req.file) {
+        const oldImage = path.join(__dirname, '..', 'uploads/course', path.basename(course.image));
+        deleteImage(oldImage);
+        course.image = getImageUrl(req, req.file, 'course');
+    } else {
+        course.image = course.image;
     }
 
     // Update other fields if provided in the request
